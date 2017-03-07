@@ -16,7 +16,8 @@ main = do
                 _ -> (id, preinput)
     case parse template "" input of
         Left err -> do
-            hPutStrLn stdout $ show err
+            putStrLn line -- echo an unchanged line
+            hPutStrLn stderr $ show err
             exitWith (ExitFailure 1)
         Right ns -> renderHaskell pad . preprocess $ transform ns
 

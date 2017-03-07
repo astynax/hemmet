@@ -49,3 +49,20 @@ divc_ ("foo" <> "theme-ocean") $ pure ()
 divc_ "foo__bar" $ pure ()
 divc_ "foo__baz" $ pure ()
 ```
+
+## integration with Emacs
+
+1. put a `hemmet` binary somewhere in `$PATH`
+1. add to your `.emacs`
+```elisp
+(defun hemmet-expand-region ()
+  (interactive)
+  (let ((f (lambda (b e)
+             (shell-command-on-region
+              b e "hemmet" t t "*hemmet error*" t))))
+    (if (mark)
+        (funcall f (region-beginning) (region-end))
+      (funcall f (line-beginnig-position) (line-end-position)))
+    ))
+(bind-key "C-c C-j" 'hemmet-expand-region)
+```
