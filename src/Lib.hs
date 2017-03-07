@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Lib
@@ -6,8 +7,7 @@ module Lib
     , Params(..)
     , Block(..)
     , Element(..)
-    , Mix(..)
-    , Modifier(..)
+    , Addon(..)
     , template
     , transform
       -- reexports
@@ -17,7 +17,6 @@ module Lib
 import Data.Char
 import Data.Maybe
 import Text.Parsec
-import Text.Parsec.Char
 import Text.Parsec.String
 
 newtype Template =
@@ -25,11 +24,10 @@ newtype Template =
     deriving (Show, Eq)
 
 data Params = Params
-    { _tagName :: String
-    , _name :: String
-    , _mods :: [Modifier]
-    , _mixes :: [Mix]
-    , _childs :: [Either Element Block]
+    { _pTagName :: String
+    , _pName :: String
+    , _pAddons :: [Addon]
+    , _pChilds :: [Either Element Block]
     } deriving (Show, Eq)
 
 newtype Block = Block
@@ -40,37 +38,47 @@ newtype Element = Element
     { unElement :: Params
     } deriving (Show, Eq)
 
-newtype Mix = Mix
-    { unMix :: String
-    } deriving (Show, Eq)
-
-newtype Modifier = Modifier
-    { unModifier :: String
-    } deriving (Show, Eq)
-
-data Node =
-    Node String
-         [String]
-         [Node]
+data Addon
+    = Mod String
+    | Mix String
+    | Var String
     deriving (Show, Eq)
+
+data Node = Node
+    { _nTagName :: String
+    , _nClasses :: [String]
+    , _nVars :: [String]
+    , _nChilds :: [Node]
+    } deriving (Show, Eq)
 
 -- transformation
 transform :: Template -> [Node]
 transform (Template bs) = map (transformBlock "") bs
 
 transformBlock :: String -> Block -> Node
-transformBlock _ (Block p) = transform' (flip const) (_name p) p
+transformBlock _ (Block p) = transform' (flip const) (_pName p) p
 
 transformElement :: String -> Element -> Node
 transformElement parent = transform' (prefix "__") parent . unElement
 
-transform' use parent (Params tagName name mods mixes childs) =
-    let n = use parent name
-    in Node
-           tagName
-           (n : map (prefix "_" n . unModifier) mods ++ map unMix mixes) $
-       map (either (transformElement parent) (transformBlock parent)) childs
+transform' :: (String -> String -> String) -> String -> Params -> Node
+transform' use parent (Params _nTagName name addons childs) = Node {..}
+  where
+    n = use parent name
+    _nClasses =
+        (n :) $
+        flip mapMaybe addons $ \case
+            Var _ -> Nothing
+            Mix m -> Just m
+            Mod m -> Just $ prefix "_" n m
+    _nVars =
+        flip mapMaybe addons $ \case
+            Var v -> Just v
+            _ -> Nothing
+    _nChilds =
+        map (either (transformElement parent) (transformBlock parent)) childs
 
+prefix :: String -> String -> String -> String
 prefix sep p n = p ++ sep ++ n
 
 -- template parsing
@@ -81,11 +89,10 @@ template = Template <$> many_ (part (always blockName) $ const Block) <* eof
 
 part :: Parser (Bool, String) -> (Bool -> Params -> a) -> Parser a
 part nameParser wrap = do
-    _tagName <- try_ identifier
-    (isBlock, _name) <- nameParser
-    _mods <- many $ Modifier <$> (char '~' *> modName)
-    _mixes <- many $ Mix <$> (char '^' *> kebabCasedName)
-    _childs <- try_ $ char '>' *> many_ (part both wrap')
+    _pTagName <- try_ identifier
+    (isBlock, _pName) <- nameParser
+    _pAddons <- many addon
+    _pChilds <- try_ $ char '>' *> many_ (part both wrap')
     return $ wrap isBlock Params {..}
   where
     both = ((,) True) <$> blockName <|> ((,) False) <$> elemName
@@ -93,7 +100,8 @@ part nameParser wrap = do
     wrap' False = Left . Element
 
 identifier :: Parser String
-identifier = (:) <$> letter' <*> many (char '_' <|> digit <|> letter')
+identifier =
+    (:) <$> (letter' <|> char '_') <*> many (char '_' <|> digit <|> letter')
   where
     letter' = satisfy isAsciiLower <|> satisfy isAsciiUpper
 
@@ -102,6 +110,13 @@ blockName = string ":" *> kebabCasedName
 
 elemName :: Parser String
 elemName = string "." *> kebabCasedName
+
+addon :: Parser Addon
+addon = mod_ <|> mix <|> var
+  where
+    mod_ = Mod <$> (char '~' *> modName)
+    mix = Mix <$> (char '^' *> kebabCasedName)
+    var = Var <$> (char '$' *> identifier)
 
 kebabCasedName :: Parser String
 kebabCasedName = (:) <$> lascii <*> many (char '-' <|> lascii <|> digit)
@@ -117,4 +132,5 @@ many_ p = ps <* eof <|> between (char '(') (char ')') ps
   where
     ps = p `sepBy` char '+'
 
+try_ :: Parser [a] -> Parser [a]
 try_ = (<|> pure [])

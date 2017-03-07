@@ -1,6 +1,7 @@
 module Main where
 
 import Control.Monad
+import Data.List
 import Lib
 import System.Exit
 import System.IO
@@ -22,7 +23,8 @@ main = do
 
 renderHtml :: String -> [Node] -> IO ()
 renderHtml _ [] = return ()
-renderHtml pad ((Node name classes elems):ns) = do
+renderHtml pad ((Node name classes _ elems):ns) -- TODO: add vars support
+ = do
     putStr $ pad ++ "<" ++ tagName ++ " \"" ++ unwords classes ++ "\">"
     unless (null elems) $ do
         putStrLn ""
@@ -38,18 +40,15 @@ renderHtml pad ((Node name classes elems):ns) = do
 
 renderHaskell :: String -> [Node] -> IO ()
 renderHaskell _ [] = return ()
-renderHaskell pad ((Node name classes elems):ns) = do
+renderHaskell pad ((Node name classes vars elems):ns) = do
     putStr $ pad ++ tagName ++ " "
-    putStr . show . unwords $ classes
-    {- TODO: move to syntax
-    let cs = map show classes
-    case cs of
-        [c] -> putStr c
-        _ -> putStr $ "(" ++ intercalate " <> " cs ++ ")"
-    -}
-    case elems of
-        [] -> putStrLn " $ pure ()"
-        _ -> do
+    let cs = show . unwords $ classes
+    if null vars
+        then putStr cs
+        else putStr $ "(" ++ intercalate " <> " (cs : vars) ++ ")"
+    if null elems
+        then putStrLn " $ pure ()"
+        else do
             putStrLn " $ do"
             renderHaskell (pad ++ "  ") elems
     renderHaskell pad ns
@@ -64,4 +63,4 @@ type Preprocessor = [Node] -> [Node]
 
 stripTop :: Preprocessor
 stripTop [] = []
-stripTop ((Node _ _ es):_) = es
+stripTop ((Node _ _ _ es):_) = es

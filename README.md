@@ -41,6 +41,14 @@ divc_ "foo" $ do
 divc_ "foo theme-ocean" $ pure ()
 ```
 
+### Variables
+
+`echo ":foo\$bar^baz" | hemmet`
+
+```haskell
+divc_ ("foo baz" <> bar) $ pure ()
+```
+
 ### Root node stripping
 
 `$ echo "<:foo>.bar+.baz" | hemmet`
