@@ -13,7 +13,7 @@ main = do
     let (preprocess, input) =
             case preinput of
                 ('<':xs) -> (stripTop, xs)
-                _ -> (id, input)
+                _ -> (id, preinput)
     case parse template "" input of
         Left err -> do
             hPutStrLn stdout $ show err
