@@ -62,7 +62,7 @@ divc_ "foo__baz" $ pure ()
               b e "hemmet" t t "*hemmet error*" t))))
     (if (mark)
         (funcall f (region-beginning) (region-end))
-      (funcall f (line-beginnig-position) (line-end-position)))
+      (funcall f (line-beginning-position) (line-end-position)))
     ))
 ;; bind using a function from "bind-key" package
 (bind-key "C-c C-j" 'hemmet-expand-region haskell-mode-map)
