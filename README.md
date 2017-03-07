@@ -30,7 +30,7 @@ button "submit" $ pure ()
 
 ```haskell
 divc_ "foo" $ do
-  divc_ ("foo__bar" <> "foo__bar_font_small" <> "foo__bar_hidden_t") $ pure ()
+  divc_ "foo__bar foo__bar_font_small foo__bar_hidden_t" $ pure ()
 ```
 
 ### Mixes
@@ -38,7 +38,7 @@ divc_ "foo" $ do
 `$ echo ":foo^theme-ocean" | hemmet`
 
 ```haskell
-divc_ ("foo" <> "theme-ocean") $ pure ()
+divc_ "foo theme-ocean" $ pure ()
 ```
 
 ### Root node stripping
