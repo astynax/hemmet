@@ -64,5 +64,8 @@ divc_ "foo__baz" $ pure ()
         (funcall f (region-beginning) (region-end))
       (funcall f (line-beginnig-position) (line-end-position)))
     ))
-(bind-key "C-c C-j" 'hemmet-expand-region)
+;; bind using a function from "bind-key" package
+(bind-key "C-c C-j" 'hemmet-expand-region haskell-mode-map)
+;; or just use built-in function
+(define-key haskell-mode-map (kbd "C-c C-j") 'hemmet-expand-region)
 ```
