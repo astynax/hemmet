@@ -1,14 +1,36 @@
 # hemmet
 
-*TODO:* fill this
+**hemmet** CLI-tool, that expands one-line templates to markup blocks in
+Haskell/HTML/CSS. Template language is similar to [Emmet](http://emmet.io/)/[ZenCoding](http://www.456bereastreet.com/archive/200909/write_html_and_css_quicker_with_with_zen_coding/)
+but has strong [BEM](https://bem.info/) flavour :)
 
-## usage
+## Usage
 
-`$ hemmet [html|css|haskell]`
+`hemmet OUTPUT_TYPE`
+
+where `OUTPUT_TYPE` can be
+
+- `haskell` (default)
+- `html`
+- `css`
+
+Typical call:
+
+```text
+$ echo ":foo" | hemmet html
+<div "foo"></div>
+$ echo ":foo" | hemmet css
+.foo {
+}
+$ echo ":foo" | hemmet
+divc_ "foo" $ pure ()
+```
+
+## Template language syntax
 
 ### Nesting
 
-`$ echo ":block1>(.el1>(.el2)+.el3)+:block2" | hemmet`
+`:block1>(.el1>(.el2)+.el3)+:block2`
 
 ```haskell
 divc_ "block1" $ do
@@ -20,7 +42,7 @@ divc_ "block2" $ pure ()
 
 ### Tags
 
-`$ echo "button:submit" | hemmet`
+`button:submit`
 
 ```haskell
 button "submit" $ pure ()
@@ -28,7 +50,7 @@ button "submit" $ pure ()
 
 ### Modifiers
 
-`$ echo ":foo>.bar~font_small~hidden_t" | hemmet`
+`:foo>.bar~font_small~hidden_t`
 
 ```haskell
 divc_ "foo" $ do
@@ -37,7 +59,7 @@ divc_ "foo" $ do
 
 ### Mixes
 
-`$ echo ":foo^theme-ocean" | hemmet`
+`:foo^theme-ocean`
 
 ```haskell
 divc_ "foo theme-ocean" $ pure ()
@@ -45,15 +67,17 @@ divc_ "foo theme-ocean" $ pure ()
 
 ### Variables
 
-`echo ":foo\$bar^baz" | hemmet`
+`:foo$bar^baz`
 
 ```haskell
 divc_ ("foo baz" <> bar) $ pure ()
 ```
 
+**Note:** work only for *output type* "haskell"
+
 ### Root node stripping
 
-`$ echo "<:foo>.bar+.baz" | hemmet`
+`<:foo>.bar+.baz`
 
 ```haskell
 divc_ "foo__bar" $ pure ()
