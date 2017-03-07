@@ -1,7 +1,6 @@
 module Main where
 
 import Control.Monad
-import Data.List
 import Lib
 import System.Exit
 import System.IO
@@ -41,10 +40,13 @@ renderHaskell :: String -> [Node] -> IO ()
 renderHaskell _ [] = return ()
 renderHaskell pad ((Node name classes elems):ns) = do
     putStr $ pad ++ tagName ++ " "
+    putStr . show . unwords $ classes
+    {- TODO: move to syntax
     let cs = map show classes
     case cs of
         [c] -> putStr c
         _ -> putStr $ "(" ++ intercalate " <> " cs ++ ")"
+    -}
     case elems of
         [] -> putStrLn " $ pure ()"
         _ -> do
