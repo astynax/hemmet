@@ -60,7 +60,7 @@ divc_ "foo__baz" $ pure ()
   (let ((f (lambda (b e)
              (shell-command-on-region
               b e "hemmet" t t "*hemmet error*" t))))
-    (if (mark)
+    (if (region-active-p)
         (funcall f (region-beginning) (region-end))
       (funcall f (line-beginning-position) (line-end-position)))
     ))
