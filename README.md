@@ -4,6 +4,8 @@
 
 ## usage
 
+`$ hemmet [html|css|haskell]`
+
 ### Nesting
 
 `$ echo ":block1>(.el1>(.el2)+.el3)+:block2" | hemmet`

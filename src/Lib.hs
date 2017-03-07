@@ -4,6 +4,7 @@
 module Lib
     ( Node(..)
     , Template(..)
+    , TemplateNode
     , Params(..)
     , Block(..)
     , Element(..)
@@ -27,8 +28,10 @@ data Params = Params
     { _pTagName :: String
     , _pName :: String
     , _pAddons :: [Addon]
-    , _pChilds :: [Either Element Block]
+    , _pChilds :: [TemplateNode]
     } deriving (Show, Eq)
+
+type TemplateNode = Either Element Block
 
 newtype Block = Block
     { unBlock :: Params
@@ -50,6 +53,8 @@ data Node = Node
     , _nVars :: [String]
     , _nChilds :: [Node]
     } deriving (Show, Eq)
+
+type CtorAndName a = (Params -> a, String)
 
 -- transformation
 transform :: Template -> [Node]
@@ -83,33 +88,37 @@ prefix sep p n = p ++ sep ++ n
 
 -- template parsing
 template :: Parser Template
-template = Template <$> many_ (part (always blockName) $ const Block) <* eof
+template = Template <$> many_ alwaysBlock <* eof
   where
-    always = fmap ((,) True)
+    alwaysBlock = templateNode $ ((,) Block) <$> blockName
 
-part :: Parser (Bool, String) -> (Bool -> Params -> a) -> Parser a
-part nameParser wrap = do
+templateNode :: Parser (CtorAndName a) -> Parser a
+templateNode cnn = do
     _pTagName <- try_ identifier
-    (isBlock, _pName) <- nameParser
+    (ctor, _pName) <- cnn
     _pAddons <- many addon
-    _pChilds <- try_ $ char '>' *> many_ (part both wrap')
-    return $ wrap isBlock Params {..}
+    _pChilds <- try_ $ childs
+    return $ ctor Params {..}
   where
-    both = ((,) True) <$> blockName <|> ((,) False) <$> elemName
-    wrap' True = Right . Block
-    wrap' False = Left . Element
+    childs = char '>' *> many_ (templateNode blockOrElement)
 
-identifier :: Parser String
-identifier =
-    (:) <$> (letter' <|> char '_') <*> many (char '_' <|> digit <|> letter')
+blockOrElement :: Parser (CtorAndName TemplateNode)
+blockOrElement = b <|> e
   where
-    letter' = satisfy isAsciiLower <|> satisfy isAsciiUpper
+    b = ((,) (Right . Block)) <$> blockName
+    e = ((,) (Left . Element)) <$> elemName
 
 blockName :: Parser String
 blockName = string ":" *> kebabCasedName
 
 elemName :: Parser String
 elemName = string "." *> kebabCasedName
+
+identifier :: Parser String
+identifier = (:) <$> firstChar <*> many restChar
+  where
+    firstChar = satisfy isAsciiLower <|> satisfy isAsciiUpper <|> char '_'
+    restChar = firstChar <|> digit
 
 addon :: Parser Addon
 addon = mod_ <|> mix <|> var
@@ -124,8 +133,9 @@ kebabCasedName = (:) <$> lascii <*> many (char '-' <|> lascii <|> digit)
     lascii = satisfy isAsciiLower
 
 modName :: Parser String
-modName =
-    (++) <$> kebabCasedName <*> (try_ $ (:) <$> char '_' <*> kebabCasedName)
+modName = (++) <$> kebabCasedName <*> possibleValue
+  where
+    possibleValue = try_ $ (:) <$> char '_' <*> kebabCasedName
 
 many_ :: Parser a -> Parser [a]
 many_ p = ps <* eof <|> between (char '(') (char ')') ps
