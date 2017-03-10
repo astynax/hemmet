@@ -73,7 +73,8 @@ renderHaskell pad ((Node name classes vars childs):ns) = do
     tagName =
         case name of
             "" -> "divc_"
-            _ -> name
+            _ | "c_" `isSuffixOf` name -> name
+            _ -> name ++ "c_"
 
 renderCss :: a -> [Node] -> IO ()
 renderCss _ = render . sort . collect

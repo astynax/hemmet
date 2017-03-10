@@ -14,6 +14,8 @@ where `OUTPUT_TYPE` can be
 - `html`
 - `css`
 
+**Note:** currently hemmet formats Haskell code using [react-flux](https://bitbucket.org/s9gf4ult/react-flux) eDSL.
+
 Typical call:
 
 ```text
@@ -45,7 +47,7 @@ divc_ "block2" $ pure ()
 `button:submit`
 
 ```haskell
-button "submit" $ pure ()
+buttonc_ "submit" $ pure ()
 ```
 
 ### Modifiers
