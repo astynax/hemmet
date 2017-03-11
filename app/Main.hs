@@ -2,42 +2,56 @@
 
 module Main where
 
-import Data.Text as T hiding (null)
-import qualified Data.Text.IO as TIO
-import System.Environment
+import Data.List
+import Data.Maybe
+import Data.Text (pack)
+import Options.Applicative
 import System.Exit
 import System.IO
 
 import Hemmet
 
+type Options = Renderer
+
 main :: IO ()
-main = do
-    args <- getArgs
-    let renderer =
-            case args of
-                ("html":[]) -> Just renderHtml
-                ("css":[]) -> Just renderCss
-                ("react-flux":[]) -> Just renderReactFlux
-                [] -> Just renderReactFlux
-                _ -> Nothing
-    maybe showHelp run renderer
+main = configure >>= run
   where
-    showHelp = do
-        putStrLn "Usage:\n  hemmet [html|css|react-flux]"
-        exitWith (ExitFailure 1)
+    configure = execParser options
     run render = do
-        line <- pack <$> getLine
-        let (pad, preinput) = T.span (== ' ') line
+        line <- getLine
+        let (pad, preinput) = span (== ' ') line
         let (preprocess, input) =
-                if "<" `T.isPrefixOf` preinput
-                    then (stripTop, T.tail preinput)
+                if "<" `isPrefixOf` preinput
+                    then (stripTop, tail preinput)
                     else (id, preinput)
-        case parse template "" input of
+        case parse template "" (pack input) of
             Left err -> do
-                TIO.putStr line -- echo an unchanged line
+                putStr line -- echo an unchanged line
                 hPutStrLn stderr $ show err
                 exitWith (ExitFailure 10)
-            Right ns -> render pad . preprocess $ toTree ns
+            Right ns -> render (pack pad) . preprocess $ toTree ns
+
+-- options
+options :: ParserInfo Options
+options =
+    info
+        (renderTo <**> helper)
+        (progDesc "Expands the template string" <>
+         header "Hemmet, the snippet expander" <>
+         fullDesc)
+
+renderTo :: Parser Renderer
+renderTo = fromMaybe renderReactFlux <$> optional arg'
+  where
+    arg' = argument reader $ metavar "html|css|react-flux"
+    reader =
+        eitherReader $ \raw ->
+            case raw of
+                "" -> Right renderReactFlux
+                "react-flux" -> Right renderReactFlux
+                "html" -> Right renderHtml
+                "css" -> Right renderCss
+                _ -> Left $ "Unknown renderer: " ++ raw
 
 -- transformations
 stripTop :: Transformation
