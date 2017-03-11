@@ -1,5 +1,10 @@
-import Lib
+{-# LANGUAGE OverloadedStrings #-}
+
+import Data.Text
 import Test.Hspec
+
+import Hemmet
+import Hemmet.Template
 
 main :: IO ()
 main =
@@ -72,12 +77,12 @@ testParser =
 -- "transform" spec
 testTransformer :: Spec
 testTransformer =
-    describe "Lib.transform" $
+    describe "Hemmet.toTree" $
     it "transformes a complex example" $
-    transform exampleTemplate `shouldBe` exampleNodes
+    toTree exampleTemplate `shouldBe` exampleNodes
 
 -- complex examples
-exampleQuery :: String
+exampleQuery :: Text
 exampleQuery =
     "form:search-form$theme>\
        \input.query^red-text>\
