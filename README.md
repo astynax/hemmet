@@ -7,7 +7,9 @@ but has strong [BEM](https://bem.info/) flavour :)
 ## Usage
 
 `$ hemmet -e EXPRESSION`
+
 or
+
 `$ echo "EXPRESSION" | hemmet`
 
 See `hemmet --help` for full options list.
@@ -17,12 +19,14 @@ See `hemmet --help` for full options list.
 Hemmet can expand templates into
 
 - `react-flux` ([react-flux](https://bitbucket.org/s9gf4ult/react-flux) Haskell library eDSL. Default renderer)
+
 `$ echo ":foo>.bar" | hemmet`
 ```haskell
 divc_ "foo" $ do
   divc_ "foo__bar" $ pure ()
 ```
 - `html`
+
 `$ echo ":foo>.bar" | hemmet html`
 ```html
 <div class="foo">
@@ -30,6 +34,7 @@ divc_ "foo" $ do
 </div>
 ```
 - `css`
+
 `$ echo ":foo>.bar" | hemmet css`
 ```css
 .foo {
