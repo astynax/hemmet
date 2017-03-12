@@ -6,31 +6,32 @@ but has strong [BEM](https://bem.info/) flavour :)
 
 ## Usage
 
-`hemmet OUTPUT_TYPE`
+`hemmet RENDERER`
 
 where `OUTPUT_TYPE` can be
 
-- `haskell` (default)
+- `react-flux` ([react-flux](https://bitbucket.org/s9gf4ult/react-flux) Haskell library eDSL. Default renderer)
 - `html`
 - `css`
 
-**Note:** currently hemmet formats Haskell code using [react-flux](https://bitbucket.org/s9gf4ult/react-flux) eDSL.
-
 Typical call:
 
-```text
-$ echo ":foo>.bar" | hemmet html
+`$ echo ":foo>.bar" | hemmet html`
+```html
 <div class="foo">
   <div class="foo__bar"></div>
 </div>
-$ echo ":foo>.bar" | hemmet css
+```
+`$ echo ":foo>.bar" | hemmet css`
+```css
 .foo {
 }
 
 .foo__bar {
 }
-
-$ echo ":foo>.bar" | hemmet
+```
+`$ echo ":foo>.bar" | hemmet`
+```haskell
 divc_ "foo" $ do
   divc_ "foo__bar" $ pure ()
 ```
