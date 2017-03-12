@@ -1,6 +1,6 @@
 # hemmet
 
-**hemmet** CLI-tool, that expands one-line templates to markup blocks in
+**hemmet** is a CLI-tool, that expands one-line templates to markup blocks in
 Haskell/HTML/CSS. Template language is similar to [Emmet](http://emmet.io/)/[ZenCoding](http://www.456bereastreet.com/archive/200909/write_html_and_css_quicker_with_with_zen_coding/)
 but has strong [BEM](https://bem.info/) flavour :)
 
@@ -91,7 +91,17 @@ divc_ "foo theme-ocean" $ pure ()
 divc_ ("foo baz" <> bar) $ pure ()
 ```
 
-**Note:** work only for *output type* "haskell"
+**Note:** at the moment it works only for `react-flux`
+
+### Element+Block
+
+`:form>.submit&button>.label`
+
+```haskell
+divc_ "form" $ do
+  divc_ "form__submit button" $ do
+    divc_ "button__label" $ pure ()
+```
 
 ### Root node stripping
 

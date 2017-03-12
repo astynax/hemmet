@@ -42,8 +42,10 @@ newtype Block =
     Block Params
     deriving (Show, Eq)
 
-newtype Element =
-    Element Params
+data Element
+    = Element Params
+    | ElementBlock Text
+                   Params
     deriving (Show, Eq)
 
 data Addon
@@ -57,7 +59,7 @@ type CtorAndName a = (Params -> a, Text)
 template :: Parser Template
 template = Template <$> many_ alwaysBlock <* eof
   where
-    alwaysBlock = templateNode $ ((,) Block) <$> blockName
+    alwaysBlock = templateNode $ (,) Block <$> blockName
 
 templateNode :: Parser (CtorAndName a) -> Parser a
 templateNode cnn = do
@@ -70,16 +72,23 @@ templateNode cnn = do
     childs = char '>' *> many_ (templateNode blockOrElement)
 
 blockOrElement :: Parser (CtorAndName TemplateNode)
-blockOrElement = b <|> e
-  where
-    b = ((,) (Right . Block)) <$> blockName
-    e = ((,) (Left . Element)) <$> elemName
+blockOrElement = mkBlock <|> mkElem
+
+mkBlock :: Parser (CtorAndName TemplateNode)
+mkBlock = (,) (Right . Block) <$> blockName
+
+mkElem :: Parser (CtorAndName TemplateNode)
+mkElem = do
+    _ <- char '.'
+    name <- kebabCasedName
+    mbBlockName <- optionMaybe (char '&' *> kebabCasedName)
+    return $
+        case mbBlockName of
+            Just name' -> (Left . ElementBlock name, name')
+            _ -> (Left . Element, name)
 
 blockName :: Parser Text
-blockName = string ":" *> kebabCasedName
-
-elemName :: Parser Text
-elemName = string "." *> kebabCasedName
+blockName = char ':' *> kebabCasedName
 
 identifier :: Parser Text
 identifier = cons <$> firstChar <*> (pack <$> many restChar)
@@ -123,7 +132,10 @@ transformBlock :: Text -> Block -> Node
 transformBlock _ (Block p) = transform' (flip const) (_pName p) p
 
 transformElement :: Text -> Element -> Node
-transformElement parent (Element e) = transform' (prefix "__") parent e
+transformElement parent (Element p) = transform' (prefix "__") parent p
+transformElement parent (ElementBlock e p) =
+    let n = transformBlock parent (Block p)
+    in n {_nClasses = prefix "__" parent e : _nClasses n}
 
 transform' :: (Text -> Text -> Text) -> Text -> Params -> Node
 transform' use parent (Params _nTagName name addons childs) = Node {..}
