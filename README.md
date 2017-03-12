@@ -19,13 +19,20 @@ where `OUTPUT_TYPE` can be
 Typical call:
 
 ```text
-$ echo ":foo" | hemmet html
-<div "foo"></div>
-$ echo ":foo" | hemmet css
+$ echo ":foo>.bar" | hemmet html
+<div class="foo">
+  <div class="foo__bar"></div>
+</div>
+$ echo ":foo>.bar" | hemmet css
 .foo {
 }
-$ echo ":foo" | hemmet
-divc_ "foo" $ pure ()
+
+.foo__bar {
+}
+
+$ echo ":foo>.bar" | hemmet
+divc_ "foo" $ do
+  divc_ "foo__bar" $ pure ()
 ```
 
 ## Template language syntax
