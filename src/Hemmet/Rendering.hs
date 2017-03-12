@@ -22,7 +22,8 @@ renderHtml :: Renderer
 renderHtml _ [] = return ()
 renderHtml pad ((Node name classes _ childs):ns) -- TODO: add vars support
  = do
-    TIO.putStr $ pad <> "<" <> tagName <> " \"" <> T.unwords classes <> "\">"
+    TIO.putStr $
+        pad <> "<" <> tagName <> " class=\"" <> T.unwords classes <> "\">"
     unless (Prelude.null childs) $ do
         TIO.putStrLn ""
         renderHtml (pad <> "  ") childs
