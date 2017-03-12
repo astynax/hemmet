@@ -6,22 +6,30 @@ but has strong [BEM](https://bem.info/) flavour :)
 
 ## Usage
 
-`hemmet RENDERER`
+`$ hemmet -e EXPRESSION`
+or
+`$ echo "EXPRESSION" | hemmet`
 
-where `OUTPUT_TYPE` can be
+See `hemmet --help` for full options list.
+
+## Renderers
+
+Hemmet can expand templates into
 
 - `react-flux` ([react-flux](https://bitbucket.org/s9gf4ult/react-flux) Haskell library eDSL. Default renderer)
+`$ echo ":foo>.bar" | hemmet`
+```haskell
+divc_ "foo" $ do
+  divc_ "foo__bar" $ pure ()
+```
 - `html`
-- `css`
-
-Typical call:
-
 `$ echo ":foo>.bar" | hemmet html`
 ```html
 <div class="foo">
   <div class="foo__bar"></div>
 </div>
 ```
+- `css`
 `$ echo ":foo>.bar" | hemmet css`
 ```css
 .foo {
@@ -29,11 +37,6 @@ Typical call:
 
 .foo__bar {
 }
-```
-`$ echo ":foo>.bar" | hemmet`
-```haskell
-divc_ "foo" $ do
-  divc_ "foo__bar" $ pure ()
 ```
 
 ## Template language syntax

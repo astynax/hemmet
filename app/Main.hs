@@ -11,34 +11,40 @@ import System.IO
 
 import Hemmet
 
-type Options = Renderer
+data Options = Options
+    { renderer :: Renderer
+    , input :: IO String
+    }
 
 main :: IO ()
 main = configure >>= run
   where
-    configure = execParser options
-    run render = do
-        line <- getLine
+    configure = execParser cli
+    run opts = do
+        line <- input opts
         let (pad, preinput) = span (== ' ') line
-        let (preprocess, input) =
+        let (preprocess, datum) =
                 if "<" `isPrefixOf` preinput
                     then (stripTop, tail preinput)
                     else (id, preinput)
-        case parse template "" (pack input) of
+        case parse template "" (pack datum) of
             Left err -> do
                 putStr line -- echo an unchanged line
                 hPutStrLn stderr $ show err
                 exitWith (ExitFailure 10)
-            Right ns -> render (pack pad) . preprocess $ toTree ns
+            Right ns -> renderer opts (pack pad) . preprocess $ toTree ns
 
 -- options
-options :: ParserInfo Options
-options =
+cli :: ParserInfo Options
+cli =
     info
-        (renderTo <**> helper)
+        (options <**> helper)
         (progDesc "Expands the template string" <>
          header "Hemmet, the snippet expander" <>
          fullDesc)
+
+options :: Parser Options
+options = Options <$> renderTo <*> inputFrom
 
 renderTo :: Parser Renderer
 renderTo = fromMaybe renderReactFlux <$> optional arg'
@@ -52,6 +58,14 @@ renderTo = fromMaybe renderReactFlux <$> optional arg'
                 "html" -> Right renderHtml
                 "css" -> Right renderCss
                 _ -> Left $ "Unknown renderer: " ++ raw
+
+inputFrom :: Parser (IO String)
+inputFrom = maybe getLine pure <$> optional opt'
+  where
+    opt' =
+        strOption
+            (short 'e' <> long "expression" <> metavar "EXPRESSION" <>
+             help "Expression (snippet) to expand")
 
 -- transformations
 stripTop :: Transformation
