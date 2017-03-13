@@ -5,6 +5,7 @@ module Main where
 import Data.List
 import Data.Maybe
 import Data.Text (pack)
+import Data.Text.IO as TIO (putStr)
 import Options.Applicative
 import System.Exit
 import System.IO
@@ -29,10 +30,14 @@ main = configure >>= run
                     else (id, preinput)
         case parse template "" (pack datum) of
             Left err -> do
-                putStr line -- echo an unchanged line
+                Prelude.putStr line -- echo an unchanged line
                 hPutStrLn stderr $ show err
                 exitWith (ExitFailure 10)
-            Right ns -> renderer opts (pack pad) . preprocess $ toTree ns
+            Right tpl ->
+                TIO.putStr $
+                runRenderM
+                    (renderer opts . preprocess $ toTree tpl)
+                    (length pad)
 
 -- options
 cli :: ParserInfo Options
@@ -47,16 +52,16 @@ options :: Parser Options
 options = Options <$> renderTo <*> inputFrom
 
 renderTo :: Parser Renderer
-renderTo = fromMaybe renderReactFlux <$> optional arg'
+renderTo = fromMaybe renderReactFluxM <$> optional arg'
   where
     arg' = argument reader $ metavar "html|css|react-flux"
     reader =
         eitherReader $ \raw ->
             case raw of
-                "" -> Right renderReactFlux
-                "react-flux" -> Right renderReactFlux
-                "html" -> Right renderHtml
-                "css" -> Right renderCss
+                "" -> Right renderReactFluxM
+                "react-flux" -> Right renderReactFluxM
+                "html" -> Right renderHtmlM
+                "css" -> Right renderCssM
                 _ -> Left $ "Unknown renderer: " ++ raw
 
 inputFrom :: Parser (IO String)
