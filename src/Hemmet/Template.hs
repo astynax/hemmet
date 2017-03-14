@@ -10,6 +10,7 @@ module Hemmet.Template
     , Addon(..)
     , template
      -- reexports
+    , ParseError
     , parse
     ) where
 

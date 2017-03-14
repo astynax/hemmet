@@ -18,6 +18,7 @@ library
   exposed-modules:     Hemmet
   other-modules:       Hemmet.Rendering
                      , Hemmet.Template
+                     , Hemmet.Transformation
                      , Hemmet.Tree
   build-depends:       base >= 4.7 && < 5
                      , mtl
@@ -44,6 +45,7 @@ test-suite hemmet-test
   other-modules:       Hemmet.Rendering
                      , Hemmet
                      , Hemmet.Template
+                     , Hemmet.Transformation
                      , Hemmet.Tree
   build-depends:       base
                      , hspec
