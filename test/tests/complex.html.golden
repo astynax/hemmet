@@ -1,0 +1,8 @@
+<form class="search-form">
+  <input class="search-form__query red-text">
+    <div class="search-form__help search-form__help_hidden_t"></div>
+  </input>
+  <span class="search-form__submit button button_text_small">
+    <div class="button__hint"></div>
+  </span>
+</form>

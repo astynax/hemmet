@@ -1,14 +1,41 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import Data.Text
+import Data.ByteString as BS
+import Data.ByteString.Lazy as BSL hiding (ByteString)
+import Data.Monoid
+import Data.Text as T
+import Data.Text.Encoding
+import System.FilePath
+import System.FilePath.Glob
 import Test.Hspec
+import Test.Tasty
+import Test.Tasty.Golden
+import Test.Tasty.Hspec
 
 import Hemmet
 import Hemmet.Template
 
+type RendererInfo = (Renderer, String)
+
+renderers :: [RendererInfo]
+renderers =
+    [ (renderHtmlM, ".html")
+    , (renderCssM, ".css")
+    , (renderReactFluxM, ".react-flux")
+    ]
+
 main :: IO ()
-main =
-    hspec $ do
+main = tests >>= defaultMain
+
+tests :: IO TestTree
+tests = do
+    us <- testGroup "Unit tests" <$> mkUnitTests
+    gs <- testGroup "Golden tests" <$> (mapM mkGoldenTest =<< listTestFiles)
+    return $ testGroup "Tests" [us, gs]
+
+mkUnitTests :: IO [TestTree]
+mkUnitTests =
+    testSpecs $ do
         testParser
         testTransformer
 
@@ -55,23 +82,14 @@ testParser =
             shouldMean ":b$uPPer_case" $ tb "" "b" [Var "uPPer_case"] []
             shouldFail ":b$1leading-digit"
         it "parses a chain of items" $ do
-            ":a+:b" `shouldMean` (tb "" "a" [] [] ++ tb "" "b" [] [])
-            "(:a+:b)" `shouldMean` (tb "" "a" [] [] ++ tb "" "b" [] [])
-            ":a>.e1+.e2" `shouldMean`
-                tb "" "a" [] [el "" "e1" [] [], el "" "e2" [] []]
-            ":a>(.e1+.e2)" `shouldMean`
-                tb "" "a" [] [el "" "e1" [] [], el "" "e2" [] []]
-            ":a>(.e1)+:b" `shouldMean`
-                (tb "" "a" [] [el "" "e1" [] []] ++ tb "" "b" [] [])
+            ":a+:b" `shouldMean` (b "a" [] ++ b "b" [])
+            "(:a+:b)" `shouldMean` (b "a" [] ++ b "b" [])
+            ":a>.e1+.e2" `shouldMean` b "a" [e "e1", e "e2"]
+            ":a>(.e1+.e2)" `shouldMean` b "a" [e "e1", e "e2"]
+            ":a>(.e1)+:b" `shouldMean` (b "a" [e "e1"] ++ b "b" [])
         it "parses an element-block" $ do
             ":a>.b&c>.d" `shouldMean`
-                (tb
-                     ""
-                     "a"
-                     []
-                     [ Left . ElementBlock "b" $
-                       Params "" "c" [] [el "" "d" [] []]
-                     ])
+                (b "a" [Left . ElementBlock "b" $ Params "" "c" [] [e "d"]])
         it "parses a complex example" $
             q exampleQuery `shouldBe` Just exampleTemplate
   where
@@ -82,6 +100,8 @@ testParser =
     el t n as cs = Left . Element $ Params t n as cs
     tb t n as cs = [Block $ Params t n as cs]
     te t n as cs = tb "" "b" [] [el t n as cs]
+    b c = tb "" c []
+    e c = el "" c [] []
 
 -- "transform" spec
 testTransformer :: Spec
@@ -148,3 +168,27 @@ exampleNodes =
                 [Node "" ["button__hint"] [] []]
           ]
     ]
+
+mkGoldenTest :: FilePath -> IO TestTree
+mkGoldenTest path = do
+    input <- BS.readFile path
+    let baseName = takeBaseName path
+    return . testGroup baseName $ Prelude.map (mkTest baseName input) renderers
+  where
+    mkTest testName input (renderer, suffix) =
+        let goldenFile = replaceExtension path $ suffix <> ".golden"
+        in goldenVsStringDiff
+               (testName <> suffix)
+               (\gold new -> ["diff", "-u", gold, new])
+               goldenFile
+               (return . BSL.fromStrict . run renderer $ input)
+
+listTestFiles :: IO [FilePath]
+listTestFiles = globDir1 pat "test/tests"
+  where
+    pat = compile "*.hemmet"
+
+run :: Renderer -> ByteString -> ByteString
+run r =
+    either (encodeUtf8 . T.pack . show) encodeUtf8 .
+    runHemmet r . Prelude.head . T.lines . decodeUtf8

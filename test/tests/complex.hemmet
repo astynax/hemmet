@@ -1,0 +1,1 @@
+form:search-form$theme>input.query^red-text>(div.help~hidden_t)+span.submit&button~text_small>.hint

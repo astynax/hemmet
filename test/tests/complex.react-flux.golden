@@ -1,0 +1,5 @@
+formc_ ("search-form" <> theme) $ do
+  inputc_ "search-form__query red-text" $ do
+    divc_ "search-form__help search-form__help_hidden_t" $ pure ()
+  spanc_ "search-form__submit button button_text_small" $ do
+    divc_ "button__hint" $ pure ()
