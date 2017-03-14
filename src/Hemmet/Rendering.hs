@@ -60,11 +60,11 @@ renderReactFluxM [] = pure ()
 renderReactFluxM ((Node name classes vars childs):ns) = do
     pad
     out $ tagName <> " "
-    let cs = T.unwords $ classes
+    let cs = '"' `cons` T.unwords classes `snoc` '"'
     out $
         if null vars
-            then "\"" <> cs <> "\""
-            else "( " <> T.intercalate " <> " (cs : vars) <> ")"
+            then cs
+            else "(" <> T.intercalate " <> " (cs : vars) <> ")"
     if null childs
         then out " $ pure ()" >> nl
         else do
@@ -76,7 +76,7 @@ renderReactFluxM ((Node name classes vars childs):ns) = do
         case name of
             "" -> "divc_"
             _
-                | "c_" `T.isSuffixOf` name -> name
+                | "_" `T.isSuffixOf` name -> name
             _ -> name <> "c_"
 
 renderCssM :: Renderer
