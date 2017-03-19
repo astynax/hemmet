@@ -1,18 +1,9 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Hemmet.Template
-    ( Template(..)
-    , Params(..)
-    , Block(..)
-    , Element(..)
-    , Addon(..)
-    , template
-     -- reexports
-    , ParseError
-    , parse
-    ) where
+module Hemmet.BEM.Template where
 
 import Data.Char
 import Data.Maybe
@@ -23,11 +14,13 @@ import Text.Parsec.Text
 
 import Hemmet.Tree
 
+import Hemmet.BEM.Tree
+
 newtype Template =
     Template [Block]
     deriving (Show, Eq)
 
-instance ToTree Template where
+instance ToTree Template BemPayload where
     toTree = toTree'
 
 data Params = Params
@@ -67,7 +60,7 @@ templateNode cnn = do
     _pTagName <- try_ identifier
     (ctor, _pName) <- cnn
     _pAddons <- many addon
-    _pChilds <- try_ $ childs
+    _pChilds <- try_ childs
     return $ ctor Params {..}
   where
     childs = char '>' *> many_ (templateNode blockOrElement)
@@ -126,33 +119,36 @@ try_
 try_ = (<|> pure mempty)
 
 -- transrormation to Tree
-toTree' :: Template -> Tree
-toTree' (Template bs) = map (transformBlock "") bs
+toTree' :: Template -> Tree BemPayload
+toTree' (Template bs) = BemPayload [] [] $ map (transformBlock "") bs
 
-transformBlock :: Text -> Block -> Node
+transformBlock :: Text -> Block -> Node BemPayload
 transformBlock _ (Block p) = transform' (flip const) (_pName p) p
 
-transformElement :: Text -> Element -> Node
+transformElement :: Text -> Element -> Node BemPayload
 transformElement parent (Element p) = transform' (prefix "__") parent p
 transformElement parent (ElementBlock e p) =
     let n = transformBlock parent (Block p)
-    in n {_nClasses = prefix "__" parent e : _nClasses n}
+        pl = _nPayload n
+        newPayload = pl {_bpClasses = prefix "__" parent e : _bpClasses pl}
+    in n {_nPayload = newPayload}
 
-transform' :: (Text -> Text -> Text) -> Text -> Params -> Node
-transform' use parent (Params _nTagName name addons childs) = Node {..}
+transform' :: (Text -> Text -> Text) -> Text -> Params -> Node BemPayload
+transform' use parent (Params _nName name addons childs) = Node {..}
   where
     n = use parent name
-    _nClasses =
+    _nPayload = BemPayload {..}
+    _bpClasses =
         (n :) $
         flip mapMaybe addons $ \case
             Var _ -> Nothing
             Mix m -> Just m
             Mod m -> Just $ prefix "_" n m
-    _nVars =
+    _bpVars =
         flip mapMaybe addons $ \case
             Var v -> Just v
             _ -> Nothing
-    _nChilds =
+    _bpChilds =
         map (either (transformElement parent) (transformBlock parent)) childs
 
 prefix :: Text -> Text -> Text -> Text

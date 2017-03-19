@@ -12,7 +12,7 @@ import System.IO
 import Hemmet
 
 data Options = Options
-    { renderer :: Renderer
+    { renderer :: Renderer BemPayload
     , input :: IO String
     }
 
@@ -22,7 +22,7 @@ main = configure >>= run
     configure = execParser cli
     run opts = do
         line <- input opts
-        case runHemmet (renderer opts) (pack line) of
+        case runHemmet bem (renderer opts) (pack line) of
             Left err -> do
                 Prelude.putStr line -- echo an unchanged line
                 hPutStrLn stderr $ show err
@@ -41,7 +41,7 @@ cli =
 options :: Parser Options
 options = Options <$> renderTo <*> inputFrom
 
-renderTo :: Parser Renderer
+renderTo :: Parser (Renderer BemPayload)
 renderTo = fromMaybe renderReactFluxM <$> optional arg'
   where
     arg' = argument reader $ metavar "html|css|react-flux"

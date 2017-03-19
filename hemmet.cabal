@@ -16,9 +16,13 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Hemmet
-  other-modules:       Hemmet.Rendering
-                     , Hemmet.Template
-                     , Hemmet.Transformation
+  other-modules:       Hemmet.Backend
+                     , Hemmet.BEM
+                     , Hemmet.BEM.Rendering
+                     , Hemmet.BEM.Template
+                     , Hemmet.BEM.Transformation
+                     , Hemmet.BEM.Tree
+                     , Hemmet.Rendering
                      , Hemmet.Tree
   build-depends:       base >= 4.7 && < 5
                      , mtl
@@ -42,10 +46,14 @@ test-suite hemmet-test
   hs-source-dirs:      test
                      , src
   main-is:             Spec.hs
-  other-modules:       Hemmet.Rendering
-                     , Hemmet
-                     , Hemmet.Template
-                     , Hemmet.Transformation
+  other-modules:       Hemmet
+                     , Hemmet.Backend
+                     , Hemmet.BEM
+                     , Hemmet.BEM.Rendering
+                     , Hemmet.BEM.Template
+                     , Hemmet.BEM.Transformation
+                     , Hemmet.BEM.Tree
+                     , Hemmet.Rendering
                      , Hemmet.Tree
   build-depends:       base
                      , bytestring

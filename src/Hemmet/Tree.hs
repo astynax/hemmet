@@ -1,3 +1,7 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE UndecidableInstances #-}
+
 module Hemmet.Tree
     ( Tree
     , Node(..)
@@ -7,16 +11,22 @@ module Hemmet.Tree
 
 import Data.Text
 
-type Tree = [Node]
+type Tree a = a (Node a)
 
-data Node = Node
-    { _nTagName :: Text
-    , _nClasses :: [Text]
-    , _nVars :: [Text]
-    , _nChilds :: Tree
-    } deriving (Show, Eq)
+data Node a = Node
+    { _nName :: Text
+    , _nPayload :: a (Node a)
+    }
 
-type Transformation = Tree -> Tree
+instance Eq (a (Node a)) =>
+         Eq (Node a) where
+    (Node n1 p1) == (Node n2 p2) = n1 == n2 && p1 == p2
 
-class ToTree a where
-    toTree :: a -> Tree
+instance Show (a (Node a)) =>
+         Show (Node a) where
+    show (Node n p) = Prelude.unwords ["Node", show n, show p]
+
+type Transformation a = Tree a -> Tree a
+
+class ToTree b a where
+    toTree :: b -> Tree a

@@ -11,11 +11,14 @@ import Test.Hspec
 import Test.Tasty
 import Test.Tasty.Golden
 import Test.Tasty.Hspec
+import Text.Parsec
 
 import Hemmet
-import Hemmet.Template
+import Hemmet.BEM.Template
+import Hemmet.BEM.Tree
+import Hemmet.Tree
 
-type RendererInfo = (Renderer, String)
+type RendererInfo = (Renderer BemPayload, String)
 
 renderers :: [RendererInfo]
 renderers =
@@ -145,29 +148,32 @@ exampleTemplate =
               ]
         ]
 
-exampleNodes :: [Node]
+exampleNodes :: Tree BemPayload
 exampleNodes =
-    [ Node
+    BemPayload [] [] $
+    [ node
           "form"
           ["search-form"]
           ["theme"]
-          [ Node
+          [ node
                 "input"
                 ["search-form__query", "red-text"]
                 []
-                [ Node
+                [ node
                       "div"
                       ["search-form__help", "search-form__help_hidden_t"]
                       []
                       []
                 ]
-          , Node
+          , node
                 "span"
                 ["search-form__submit", "button", "button_text_small"]
                 []
-                [Node "" ["button__hint"] [] []]
+                [node "" ["button__hint"] [] []]
           ]
     ]
+  where
+    node n cs vs ns = Node n (BemPayload cs vs ns)
 
 mkGoldenTest :: FilePath -> IO TestTree
 mkGoldenTest path = do
@@ -188,7 +194,7 @@ listTestFiles = globDir1 pat "test/tests"
   where
     pat = compile "*.hemmet"
 
-run :: Renderer -> ByteString -> ByteString
+run :: Renderer BemPayload -> ByteString -> ByteString
 run r =
     either (encodeUtf8 . T.pack . show) encodeUtf8 .
-    runHemmet r . Prelude.head . T.lines . decodeUtf8
+    runHemmet bem r . Prelude.head . T.lines . decodeUtf8
