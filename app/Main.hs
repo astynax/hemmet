@@ -12,7 +12,7 @@ import System.IO
 import Hemmet
 
 data Options = Options
-    { renderer :: Renderer BemPayload
+    { runner :: BemRunner
     , input :: IO String
     }
 
@@ -22,12 +22,15 @@ main = configure >>= run
     configure = execParser cli
     run opts = do
         line <- input opts
-        case runHemmet bem (renderer opts) (pack line) of
+        case runHemmet bem (runner opts) (pack line) of
             Left err -> do
                 Prelude.putStr line -- echo an unchanged line
                 hPutStrLn stderr $ show err
                 exitWith (ExitFailure 10)
-            Right res -> TIO.putStr res
+            Right res ->
+                case res of
+                    Pure t -> TIO.putStr t
+                    Effect e -> e
 
 -- options
 cli :: ParserInfo Options
@@ -39,23 +42,23 @@ cli =
          fullDesc)
 
 options :: Parser Options
-options = Options <$> renderTo <*> inputFrom
+options = Options <$> argRunner <*> optInput
 
-renderTo :: Parser (Renderer BemPayload)
-renderTo = fromMaybe renderReactFluxM <$> optional arg'
+argRunner :: Parser BemRunner
+argRunner = fromMaybe bemReactFlux <$> optional arg'
   where
     arg' = argument reader $ metavar "html|css|react-flux"
     reader =
         eitherReader $ \raw ->
             case raw of
-                "" -> Right renderReactFluxM
-                "react-flux" -> Right renderReactFluxM
-                "html" -> Right renderHtmlM
-                "css" -> Right renderCssM
+                "" -> Right bemReactFlux
+                "react-flux" -> Right bemReactFlux
+                "html" -> Right bemHtml
+                "css" -> Right bemCss
                 _ -> Left $ "Unknown renderer: " ++ raw
 
-inputFrom :: Parser (IO String)
-inputFrom = maybe getLine pure <$> optional opt'
+optInput :: Parser (IO String)
+optInput = maybe getLine pure <$> optional opt'
   where
     opt' =
         strOption

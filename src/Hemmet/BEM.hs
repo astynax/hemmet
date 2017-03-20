@@ -1,21 +1,29 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Hemmet.BEM
-    ( module R
-    , BemPayload
+    ( BemBackend
+    , BemRunner
     , bem
+    , bemHtml
+    , bemCss
+    , bemReactFlux
     ) where
 
 import Data.Text as T
 
 import Hemmet.Backend
+import Hemmet.Runner
 
-import Hemmet.BEM.Rendering as R
+import Hemmet.BEM.Rendering
 import Hemmet.BEM.Template
 import Hemmet.BEM.Transformation
 import Hemmet.BEM.Tree
 
-bem :: Backend BemPayload
+type BemBackend = Backend BemPayload
+
+type BemRunner = Runner BemPayload
+
+bem :: BemBackend
 bem =
     Backend
     { getTransformation =
@@ -25,3 +33,12 @@ bem =
                   else (id, input)
     , parser = template
     }
+
+bemHtml :: BemRunner
+bemHtml = PureRunner renderHtmlM
+
+bemCss :: BemRunner
+bemCss = PureRunner renderCssM
+
+bemReactFlux :: BemRunner
+bemReactFlux = PureRunner renderReactFluxM

@@ -18,14 +18,11 @@ import Hemmet.BEM.Template
 import Hemmet.BEM.Tree
 import Hemmet.Tree
 
-type RendererInfo = (Renderer BemPayload, String)
+type RendererInfo = (BemRunner, String)
 
 renderers :: [RendererInfo]
 renderers =
-    [ (renderHtmlM, ".html")
-    , (renderCssM, ".css")
-    , (renderReactFluxM, ".react-flux")
-    ]
+    [(bemHtml, ".html"), (bemCss, ".css"), (bemReactFlux, ".react-flux")]
 
 main :: IO ()
 main = tests >>= defaultMain
@@ -194,7 +191,10 @@ listTestFiles = globDir1 pat "test/tests"
   where
     pat = compile "*.hemmet"
 
-run :: Renderer BemPayload -> ByteString -> ByteString
+run :: BemRunner -> ByteString -> ByteString
 run r =
-    either (encodeUtf8 . T.pack . show) encodeUtf8 .
+    either (encodeUtf8 . T.pack . show) (encodeUtf8 . fromResult) .
     runHemmet bem r . Prelude.head . T.lines . decodeUtf8
+  where
+    fromResult (Pure t) = t
+    fromResult _ = error "Unexpected effectful result from BEM!"

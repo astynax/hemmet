@@ -23,6 +23,7 @@ library
                      , Hemmet.BEM.Transformation
                      , Hemmet.BEM.Tree
                      , Hemmet.Rendering
+                     , Hemmet.Runner
                      , Hemmet.Tree
   build-depends:       base >= 4.7 && < 5
                      , mtl
@@ -54,6 +55,7 @@ test-suite hemmet-test
                      , Hemmet.BEM.Transformation
                      , Hemmet.BEM.Tree
                      , Hemmet.Rendering
+                     , Hemmet.Runner
                      , Hemmet.Tree
   build-depends:       base
                      , bytestring
