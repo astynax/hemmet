@@ -8,6 +8,7 @@ module Hemmet.Rendering
     , pad
     , nl
     , out
+    , paddedWith
     , withOffset
     ) where
 
@@ -17,15 +18,15 @@ import Data.Text as T hiding (null)
 
 import Hemmet.Tree
 
-type RendererM = ReaderT Int (Writer Text) ()
+type RendererM = ReaderT Text (Writer Text) ()
 
 type Renderer a = Tree a -> RendererM
 
-runRenderM :: RendererM -> Int -> Text
-runRenderM renderer offset = execWriter $ runReaderT renderer offset
+runRenderM :: RendererM -> Text -> Text
+runRenderM renderer = execWriter . runReaderT renderer
 
 pad :: RendererM
-pad = ask >>= \n -> lift (tell $ T.replicate n " ")
+pad = ask >>= lift . tell
 
 nl :: RendererM
 nl = lift $ tell "\n"
@@ -33,5 +34,8 @@ nl = lift $ tell "\n"
 out :: Text -> RendererM
 out = lift . tell
 
+paddedWith :: Text -> RendererM -> RendererM
+paddedWith p = withReaderT (<> p)
+
 withOffset :: Int -> RendererM -> RendererM
-withOffset n = withReaderT (+ n)
+withOffset = paddedWith . (`T.replicate` " ")

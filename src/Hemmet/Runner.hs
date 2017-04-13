@@ -13,7 +13,7 @@ import Hemmet.Tree
 
 data Runner a
     = PureRunner (Renderer a)
-    | EffectfulRunner (Int -> Tree a -> IO ())
+    | EffectfulRunner (Text -> Tree a -> IO ())
 
 data Result
     = Pure Text
@@ -21,8 +21,7 @@ data Result
 
 runHemmet :: Backend a -> Runner a -> Text -> Either ParseError Result
 runHemmet (Backend getTransformation' parser') runner input =
-    let (prepadding, preinput) = T.span (== ' ') input
-        padding = T.length prepadding
+    let (padding, preinput) = T.span (== ' ') input
         (transform, datum) = getTransformation' preinput
     in case parse parser' "template" datum of
            Left err -> Left err
