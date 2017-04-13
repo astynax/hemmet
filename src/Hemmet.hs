@@ -1,6 +1,7 @@
 module Hemmet
     ( module Hemmet.BEM
     , module Hemmet.Backend
+    , module Hemmet.FileTree
     , module Hemmet.Runner
       -- reexports
     , ParseError
@@ -10,4 +11,5 @@ import Text.Parsec (ParseError)
 
 import Hemmet.BEM
 import Hemmet.Backend
+import Hemmet.FileTree
 import Hemmet.Runner

@@ -22,6 +22,10 @@ library
                      , Hemmet.BEM.Template
                      , Hemmet.BEM.Transformation
                      , Hemmet.BEM.Tree
+                     , Hemmet.FileTree
+                     , Hemmet.FileTree.Rendering
+                     , Hemmet.FileTree.Tree
+                     , Hemmet.FileTree.Template
                      , Hemmet.Rendering
                      , Hemmet.Runner
                      , Hemmet.Tree
@@ -54,6 +58,10 @@ test-suite hemmet-test
                      , Hemmet.BEM.Template
                      , Hemmet.BEM.Transformation
                      , Hemmet.BEM.Tree
+                     , Hemmet.FileTree
+                     , Hemmet.FileTree.Rendering
+                     , Hemmet.FileTree.Tree
+                     , Hemmet.FileTree.Template
                      , Hemmet.Rendering
                      , Hemmet.Runner
                      , Hemmet.Tree
