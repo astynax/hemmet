@@ -17,8 +17,11 @@ import Hemmet.FileTree.Tree
 
 renderShellScript :: Renderer FileTreePayload
 renderShellScript File = pure ()
-renderShellScript (Directory xs) = forM_ (sorted xs) render
+renderShellScript (Directory xs) = addHeader >> nl >> forM_ (sorted xs) render
   where
+    addHeader = do
+        out "#!/bin/bash" >> nl -- ensure shebang
+        out "set -euf -o pipefail" >> nl -- add some safety
     render (Node p File) = pad >> cmd "touch" p >> nl
     render (Node p (Directory ns)) = do
         pad >> cmd "mkdir" p
