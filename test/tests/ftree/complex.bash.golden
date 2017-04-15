@@ -1,0 +1,21 @@
+#!/bin/bash
+set -euf -o pipefail
+
+touch "file1"
+touch "file2"
+mkdir "folderA" && pushd "folderA"
+  touch "fileA1"
+  touch "fileA2"
+  mkdir "folderAA"
+  mkdir "folderAB" && pushd "folderAB"
+    touch "fileAB1"
+    touch "fileAB2"
+  popd
+popd
+mkdir "folderB" && pushd "folderB"
+  mkdir "folderBA" && pushd "folderBA"
+    mkdir "folderBAA" && pushd "folderBAA"
+      touch "fileBAA1"
+    popd
+  popd
+popd

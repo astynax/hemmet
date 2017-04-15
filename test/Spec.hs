@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Control.Monad
 import Data.ByteString as BS
 import Data.ByteString.Lazy as BSL hiding (ByteString)
 import Data.Monoid
@@ -14,15 +15,22 @@ import Test.Tasty.Hspec
 import Text.Parsec
 
 import Hemmet
-import Hemmet.BEM.Template
+import Hemmet.BEM.Template as BEM
 import Hemmet.BEM.Tree
+import Hemmet.FileTree.Tree
 import Hemmet.Tree
 
-type RendererInfo = (BemRunner, String)
+type GoldenSuite a = (FilePath, Backend a, [(Runner a, String)])
 
-renderers :: [RendererInfo]
-renderers =
-    [(bemHtml, ".html"), (bemCss, ".css"), (bemReactFlux, ".react-flux")]
+goldenBem :: GoldenSuite BemPayload
+goldenBem =
+    ( "bem"
+    , bem
+    , [(bemHtml, ".html"), (bemCss, ".css"), (bemReactFlux, ".react-flux")])
+
+goldenFileTree :: GoldenSuite FileTreePayload
+goldenFileTree =
+    ("ftree", fileTree, [(treeLike, ".tree"), (bashScript, ".bash")])
 
 main :: IO ()
 main = tests >>= defaultMain
@@ -30,7 +38,12 @@ main = tests >>= defaultMain
 tests :: IO TestTree
 tests = do
     us <- testGroup "Unit tests" <$> mkUnitTests
-    gs <- testGroup "Golden tests" <$> (mapM mkGoldenTest =<< listTestFiles)
+    gs <-
+        testGroup "Golden tests" <$>
+        sequence
+            [ mkGoldenTest "test/tests" goldenBem
+            , mkGoldenTest "test/tests" goldenFileTree
+            ]
     return $ testGroup "Tests" [us, gs]
 
 mkUnitTests :: IO [TestTree]
@@ -95,7 +108,7 @@ testParser =
   where
     shouldFail s = q s `shouldBe` Nothing
     shouldMean s bs = q s `shouldBe` Just (Template bs)
-    q = either (const Nothing) Just . parse template "foo"
+    q = either (const Nothing) Just . parse BEM.template "foo"
     -- shortcuts
     el t n as cs = Left . Element $ Params t n as cs
     tb t n as cs = [Block $ Params t n as cs]
@@ -172,29 +185,25 @@ exampleNodes =
   where
     node n cs vs ns = Node n (BemPayload cs vs ns)
 
-mkGoldenTest :: FilePath -> IO TestTree
-mkGoldenTest path = do
-    input <- BS.readFile path
-    let baseName = takeBaseName path
-    return . testGroup baseName $ Prelude.map (mkTest baseName input) renderers
-  where
-    mkTest testName input (renderer, suffix) =
-        let goldenFile = replaceExtension path $ suffix <> ".golden"
-        in goldenVsStringDiff
-               (testName <> suffix)
-               (\gold new -> ["diff", "-u", gold, new])
-               goldenFile
-               (return . BSL.fromStrict . run renderer $ input)
+mkGoldenTest :: FilePath -> GoldenSuite a -> IO TestTree
+mkGoldenTest root (subdir, backend, renderers) = do
+    let dir = root </> subdir
+    inputFiles <- globDir1 (compile "*.hemmet") dir
+    fmap (testGroup dir) . forM inputFiles $ \path -> do
+        input <- BS.readFile path
+        let baseName = takeBaseName path
+        return . testGroup baseName . (flip Prelude.map) renderers $ \(renderer, suffix) ->
+            let goldenFile = replaceExtension path $ suffix <> ".golden"
+            in goldenVsStringDiff
+                   (baseName <> suffix)
+                   (\gold new -> ["diff", "-u", gold, new])
+                   goldenFile
+                   (return . BSL.fromStrict . run backend renderer $ input)
 
-listTestFiles :: IO [FilePath]
-listTestFiles = globDir1 pat "test/tests"
-  where
-    pat = compile "*.hemmet"
-
-run :: BemRunner -> ByteString -> ByteString
-run r =
+run :: Backend a -> Runner a -> ByteString -> ByteString
+run backend runner =
     either (encodeUtf8 . T.pack . show) (encodeUtf8 . fromResult) .
-    runHemmet bem r . Prelude.head . T.lines . decodeUtf8
+    runHemmet backend runner . Prelude.head . T.lines . decodeUtf8
   where
     fromResult (Pure t) = t
-    fromResult _ = error "Unexpected effectful result from BEM!"
+    fromResult _ = error "Unexpected effectful result!"

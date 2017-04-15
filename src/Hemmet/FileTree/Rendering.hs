@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Hemmet.FileTree.Rendering
-    ( renderShellScript
+    ( renderBashScript
     , renderTreeLike
     ) where
 
@@ -15,9 +15,9 @@ import Hemmet.Tree
 
 import Hemmet.FileTree.Tree
 
-renderShellScript :: Renderer FileTreePayload
-renderShellScript File = pure ()
-renderShellScript (Directory xs) = addHeader >> nl >> forM_ (sorted xs) render
+renderBashScript :: Renderer FileTreePayload
+renderBashScript File = pure ()
+renderBashScript (Directory xs) = addHeader >> nl >> forM_ (sorted xs) render
   where
     addHeader = do
         out "#!/bin/bash" >> nl -- ensure shebang

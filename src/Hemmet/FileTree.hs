@@ -2,7 +2,7 @@ module Hemmet.FileTree
     ( FileTreeBackend
     , FileTreeRunner
     , fileTree
-    , shellScript
+    , bashScript
     , treeLike
     ) where
 
@@ -21,8 +21,8 @@ fileTree :: FileTreeBackend
 fileTree =
     Backend {getTransformation = \input -> (id, input), parser = template}
 
-shellScript :: FileTreeRunner
-shellScript = PureRunner renderShellScript
+bashScript :: FileTreeRunner
+bashScript = PureRunner renderBashScript
 
 treeLike :: FileTreeRunner
 treeLike = PureRunner renderTreeLike

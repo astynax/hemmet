@@ -76,7 +76,7 @@ argFileTreeRunner = fromMaybe treeLike <$> optional arg'
             case raw of
                 "" -> Right treeLike
                 "tree" -> Right treeLike
-                "bash" -> Right shellScript
+                "bash" -> Right bashScript
                 _ -> Left $ "Unknown renderer: " ++ raw
 
 optInput :: Parser (IO String)

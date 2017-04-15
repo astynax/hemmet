@@ -1,0 +1,9 @@
+#!/bin/bash
+set -euf -o pipefail
+
+touch "a"
+touch "aa"
+touch "b"
+touch "bb"
+touch "c"
+touch "cc"

@@ -1,0 +1,14 @@
+.
+├── file1
+├── file2
+├── folderA/
+│   ├── fileA1
+│   ├── fileA2
+│   ├── folderAA/
+│   └── folderAB/
+│       ├── fileAB1
+│       └── fileAB2
+└── folderB/
+    └── folderBA/
+        └── folderBAA/
+            └── fileBAA1
