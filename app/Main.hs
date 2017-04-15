@@ -1,3 +1,5 @@
+{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Main where
@@ -11,18 +13,18 @@ import System.IO
 
 import Hemmet
 
-data Options = Options
-    { runner :: BemRunner
-    , input :: IO String
-    }
+data Options where
+    Options
+        :: forall a.
+           Backend a -> Runner a -> IO String -> Options
 
 main :: IO ()
 main = configure >>= run
   where
     configure = execParser cli
-    run opts = do
-        line <- input opts
-        case runHemmet bem (runner opts) (pack line) of
+    run (Options backend runner input) = do
+        line <- input
+        case runHemmet backend runner (pack line) of
             Left err -> do
                 Prelude.putStr line -- echo an unchanged line
                 hPutStrLn stderr $ show err
@@ -36,16 +38,24 @@ main = configure >>= run
 cli :: ParserInfo Options
 cli =
     info
-        (options <**> helper)
-        (progDesc "Expands the template string" <>
+        (commands <**> helper)
+        (progDesc "Expands the snippets" <>
          header "Hemmet, the snippet expander" <>
          fullDesc)
 
-options :: Parser Options
-options = Options <$> argRunner <*> optInput
+commands :: Parser Options
+commands =
+    subparser $
+    mkCommand "bem" "Generates BEM markup" bem argBemRunner <>
+    mkCommand "ftree" "Generates the file trees" fileTree argFileTreeRunner
+  where
+    mkCommand cmd desc backend argRunner =
+        command cmd $
+        info (Options backend <$> argRunner <*> optInput <**> helper) $
+        progDesc desc
 
-argRunner :: Parser BemRunner
-argRunner = fromMaybe bemReactFlux <$> optional arg'
+argBemRunner :: Parser BemRunner
+argBemRunner = fromMaybe bemReactFlux <$> optional arg'
   where
     arg' = argument reader $ metavar "html|css|react-flux"
     reader =
@@ -55,6 +65,18 @@ argRunner = fromMaybe bemReactFlux <$> optional arg'
                 "react-flux" -> Right bemReactFlux
                 "html" -> Right bemHtml
                 "css" -> Right bemCss
+                _ -> Left $ "Unknown renderer: " ++ raw
+
+argFileTreeRunner :: Parser FileTreeRunner
+argFileTreeRunner = fromMaybe treeLike <$> optional arg'
+  where
+    arg' = argument reader $ metavar "tree|bash"
+    reader =
+        eitherReader $ \raw ->
+            case raw of
+                "" -> Right treeLike
+                "tree" -> Right treeLike
+                "bash" -> Right shellScript
                 _ -> Left $ "Unknown renderer: " ++ raw
 
 optInput :: Parser (IO String)
