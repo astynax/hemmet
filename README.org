@@ -1,0 +1,20 @@
+#+TITLE: Hemmet
+#+DESCRIPTION: Hemmet README
+#+OPTIONS: toc:nil num:nil
+
+* hemmet
+The *hemmet* is a CLI-tool, that expands one-line templates to the arbitrary text blocks. Hemmet supports this template languages:
+- ~bem~ - template language, that similar to [[http://emmet.io/][Emmet]]/[[http://www.456bereastreet.com/archive/200909/write_html_and_css_quicker_with_with_zen_coding/][ZenCoding]] with strong [[https://bem.info/][BEM]] flavour :) Templates in this language are expanding to HTML, CSS, and Haskell HTML-like eDSLs.
+- ~ftree~ - language, that describes the file trees. Templates in this language are expanding to the pseudographic file tree representations (similar to the output of /GNU tree/ program) and Bash-scripts, that produce the real file trees on execution.
+#+BEGIN_SRC shell :results verbatim :exports both
+echo foo/{bar baz/qux doo} aux | hemmet ftree
+#+END_SRC
+
+#+RESULTS:
+: .
+: ├── aux
+: └── foo/
+:     ├── bar
+:     ├── baz/
+:     │   └── qux
+:     └── doo
