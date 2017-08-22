@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Hemmet.BEM
     ( BemBackend
     , BemRunner

@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 import Control.Monad
 import Data.ByteString as BS
 import Data.ByteString.Lazy as BSL hiding (ByteString)
@@ -100,9 +98,9 @@ testParser =
             ":a>.e1+.e2" `shouldMean` b "a" [e "e1", e "e2"]
             ":a>(.e1+.e2)" `shouldMean` b "a" [e "e1", e "e2"]
             ":a>(.e1)+:b" `shouldMean` (b "a" [e "e1"] ++ b "b" [])
-        it "parses an element-block" $ do
+        it "parses an element-block" $
             ":a>.b&c>.d" `shouldMean`
-                (b "a" [Left . ElementBlock "b" $ Params "" "c" [] [e "d"]])
+            b "a" [Left . ElementBlock "b" $ Params "" "c" [] [e "d"]]
         it "parses a complex example" $
             q exampleQuery `shouldBe` Just exampleTemplate
   where
@@ -160,28 +158,30 @@ exampleTemplate =
 
 exampleNodes :: Tree BemPayload
 exampleNodes =
-    BemPayload [] [] $
-    [ node
-          "form"
-          ["search-form"]
-          ["theme"]
-          [ node
-                "input"
-                ["search-form__query", "red-text"]
-                []
-                [ node
-                      "div"
-                      ["search-form__help", "search-form__help_hidden_t"]
-                      []
-                      []
-                ]
-          , node
-                "span"
-                ["search-form__submit", "button", "button_text_small"]
-                []
-                [node "" ["button__hint"] [] []]
-          ]
-    ]
+    BemPayload
+        []
+        []
+        [ node
+              "form"
+              ["search-form"]
+              ["theme"]
+              [ node
+                    "input"
+                    ["search-form__query", "red-text"]
+                    []
+                    [ node
+                          "div"
+                          ["search-form__help", "search-form__help_hidden_t"]
+                          []
+                          []
+                    ]
+              , node
+                    "span"
+                    ["search-form__submit", "button", "button_text_small"]
+                    []
+                    [node "" ["button__hint"] [] []]
+              ]
+        ]
   where
     node n cs vs ns = Node n (BemPayload cs vs ns)
 
@@ -192,13 +192,14 @@ mkGoldenTest root (subdir, backend, renderers) = do
     fmap (testGroup dir) . forM inputFiles $ \path -> do
         input <- BS.readFile path
         let baseName = takeBaseName path
-        return . testGroup baseName . (flip Prelude.map) renderers $ \(renderer, suffix) ->
-            let goldenFile = replaceExtension path $ suffix <> ".golden"
-            in goldenVsStringDiff
-                   (baseName <> suffix)
-                   (\gold new -> ["diff", "-u", gold, new])
-                   goldenFile
-                   (return . BSL.fromStrict . run backend renderer $ input)
+            check (renderer, suffix) =
+                let goldenFile = replaceExtension path $ suffix <> ".golden"
+                in goldenVsStringDiff
+                       (baseName <> suffix)
+                       (\gold new -> ["diff", "-u", gold, new])
+                       goldenFile
+                       (return . BSL.fromStrict . run backend renderer $ input)
+        return . testGroup baseName $ Prelude.map check renderers
 
 run :: Backend a -> Runner a -> ByteString -> ByteString
 run backend runner =

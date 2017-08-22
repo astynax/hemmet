@@ -1,8 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
-
 module Hemmet.BEM.Template where
 
 import Data.Char
@@ -113,9 +108,7 @@ many_ p = ps <* eof <|> between (char '(') (char ')') ps
   where
     ps = p `sepBy` char '+'
 
-try_
-    :: Monoid m
-    => Parser m -> Parser m
+try_ :: Monoid m => Parser m -> Parser m
 try_ = (<|> pure mempty)
 
 -- transrormation to Tree

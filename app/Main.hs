@@ -1,10 +1,9 @@
 {-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
 import Data.Maybe
+import Data.Monoid
 import Data.Text (pack)
 import Data.Text.IO as TIO (putStr)
 import Options.Applicative
@@ -14,9 +13,7 @@ import System.IO
 import Hemmet
 
 data Options where
-    Options
-        :: forall a.
-           Backend a -> Runner a -> IO String -> Options
+    Options :: forall a. Backend a -> Runner a -> IO String -> Options
 
 main :: IO ()
 main = configure >>= run
@@ -27,7 +24,7 @@ main = configure >>= run
         case runHemmet backend runner (pack line) of
             Left err -> do
                 Prelude.putStr line -- echo an unchanged line
-                hPutStrLn stderr $ show err
+                hPrint stderr err
                 exitWith (ExitFailure 10)
             Right res ->
                 case res of

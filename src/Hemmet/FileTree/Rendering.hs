@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Hemmet.FileTree.Rendering
     ( renderBashScript
     , renderTreeLike

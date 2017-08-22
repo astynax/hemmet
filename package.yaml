@@ -1,0 +1,72 @@
+name:        hemmet
+version:     0.1.0.0
+category:    Text
+description: Expander for Emmet/ZenCoding-like snippets
+github:      astynax/hemmet
+
+author:      Aleksey Pirogov
+license:     BSD3
+maintainer:  astynax84@gmail.com
+copyright:   Aleksey Pirogov aka astynax
+
+extra-source-files:
+  - README.md
+
+default-extensions:
+  - GADTs
+  - LambdaCase
+  - MultiParamTypeClasses
+  - OverloadedStrings
+  - RecordWildCards
+
+executables:
+  hemmet:
+    source-dirs:
+      - app
+    main: Main.hs
+    ghc-options:
+      - -Werror
+      - -Wall
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - base
+      - hemmet
+      - optparse-applicative
+      - text
+
+library:
+  source-dirs:
+    - src
+  dependencies:
+    - base
+    - mtl
+    - parsec
+    - text
+  ghc-options:
+    - -Werror
+    - -Wall
+
+tests:
+  main:
+    source-dirs:
+      - test
+    main: Spec.hs
+    dependencies:
+      - base
+      - bytestring
+      - filepath
+      - Glob
+      - hemmet
+      - hspec
+      - mtl
+      - parsec
+      - tasty
+      - tasty-golden
+      - tasty-hspec
+      - text
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N

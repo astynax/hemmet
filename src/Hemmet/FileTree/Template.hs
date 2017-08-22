@@ -14,7 +14,7 @@ template :: Parser FileTree
 template = (Directory <$> item `sepBy` char ' ') <* eof
 
 item :: Parser (Node FileTreePayload)
-item = name >>= \n -> (directory n <|> file n)
+item = name >>= \n -> directory n <|> file n
   where
     file n = pure $ Node n File
 
