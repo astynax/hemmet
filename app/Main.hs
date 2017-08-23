@@ -10,7 +10,7 @@ import Options.Applicative
 import System.Exit
 import System.IO
 
-import Hemmet
+import Hemmet hiding (Parser)
 
 data Options where
     Options :: forall a. Backend a -> Runner a -> IO String -> Options
@@ -21,10 +21,11 @@ main = configure >>= run
     configure = execParser cli
     run (Options backend runner input) = do
         line <- input
-        case runHemmet backend runner (pack line) of
+        let lineText = pack line
+        case runHemmet backend runner lineText of
             Left err -> do
                 Prelude.putStr line -- echo an unchanged line
-                hPrint stderr err
+                hPutStr stderr $ parseErrorPretty' lineText err
                 exitWith (ExitFailure 10)
             Right res ->
                 case res of

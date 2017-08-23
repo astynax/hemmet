@@ -3,13 +3,11 @@ module Hemmet
     , module Hemmet.Backend
     , module Hemmet.FileTree
     , module Hemmet.Runner
-      -- reexports
-    , ParseError
+    , module Hemmet.Megaparsec
     ) where
-
-import Text.Parsec (ParseError)
 
 import Hemmet.BEM
 import Hemmet.Backend
 import Hemmet.FileTree
+import Hemmet.Megaparsec
 import Hemmet.Runner

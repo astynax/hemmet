@@ -4,9 +4,8 @@ import Data.Char
 import Data.Maybe
 import Data.Monoid
 import Data.Text hiding (map)
-import Text.Parsec
-import Text.Parsec.Text
 
+import Hemmet.Megaparsec
 import Hemmet.Tree
 
 import Hemmet.BEM.Tree
@@ -70,7 +69,7 @@ mkElem :: Parser (CtorAndName TemplateNode)
 mkElem = do
     _ <- char '.'
     name <- kebabCasedName
-    mbBlockName <- optionMaybe (char '&' *> kebabCasedName)
+    mbBlockName <- optional (char '&' *> kebabCasedName)
     return $
         case mbBlockName of
             Just name' -> (Left . ElementBlock name, name')
@@ -83,7 +82,7 @@ identifier :: Parser Text
 identifier = cons <$> firstChar <*> (pack <$> many restChar)
   where
     firstChar = satisfy isAsciiLower <|> satisfy isAsciiUpper <|> char '_'
-    restChar = firstChar <|> digit
+    restChar = firstChar <|> digitChar
 
 addon :: Parser Addon
 addon = mod_ <|> mix <|> var
@@ -94,7 +93,7 @@ addon = mod_ <|> mix <|> var
 
 kebabCasedName :: Parser Text
 kebabCasedName =
-    cons <$> lascii <*> (pack <$> many (char '-' <|> lascii <|> digit))
+    cons <$> lascii <*> (pack <$> many (char '-' <|> lascii <|> digitChar))
   where
     lascii = satisfy isAsciiLower
 

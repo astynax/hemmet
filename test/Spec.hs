@@ -10,7 +10,7 @@ import Test.Hspec
 import Test.Tasty
 import Test.Tasty.Golden
 import Test.Tasty.Hspec
-import Text.Parsec
+import Text.Megaparsec
 
 import Hemmet
 import Hemmet.BEM.Template as BEM

@@ -5,8 +5,8 @@ module Hemmet.Backend
     ) where
 
 import Data.Text
-import Text.Parsec.Text
 
+import Hemmet.Megaparsec
 import Hemmet.Tree
 
 data Backend a = forall b. ToTree b a =>

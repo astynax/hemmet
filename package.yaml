@@ -42,7 +42,7 @@ library:
   dependencies:
     - base
     - mtl
-    - parsec
+    - megaparsec
     - text
   ghc-options:
     - -Werror
@@ -61,7 +61,7 @@ tests:
       - hemmet
       - hspec
       - mtl
-      - parsec
+      - megaparsec
       - tasty
       - tasty-golden
       - tasty-hspec

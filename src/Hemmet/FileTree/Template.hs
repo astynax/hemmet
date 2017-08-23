@@ -3,9 +3,8 @@ module Hemmet.FileTree.Template
     ) where
 
 import Data.Text as T
-import Text.Parsec
-import Text.Parsec.Text
 
+import Hemmet.Megaparsec
 import Hemmet.Tree
 
 import Hemmet.FileTree.Tree
@@ -24,7 +23,7 @@ directory n = char '/' *> (Node n . Directory <$> childs)
     childs = many_ item
 
 name :: Parser Text
-name = T.pack <$> many1 (satisfy $ not . isSpecial)
+name = T.pack <$> some (satisfy $ not . isSpecial)
 
 many_ :: Parser a -> Parser [a]
 many_ p = ps <|> single p <|> none

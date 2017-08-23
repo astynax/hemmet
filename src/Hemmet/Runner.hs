@@ -5,9 +5,9 @@ module Hemmet.Runner
     ) where
 
 import Data.Text as T
-import Text.Parsec
 
 import Hemmet.Backend
+import Hemmet.Megaparsec
 import Hemmet.Rendering
 import Hemmet.Tree
 
@@ -19,7 +19,7 @@ data Result
     = Pure Text
     | Effect (IO ())
 
-runHemmet :: Backend a -> Runner a -> Text -> Either ParseError Result
+runHemmet :: Backend a -> Runner a -> Text -> Either SimpleParseError Result
 runHemmet (Backend getTransformation' parser') runner input =
     let (padding, preinput) = T.span (== ' ') input
         (transform, datum) = getTransformation' preinput
