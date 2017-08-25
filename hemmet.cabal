@@ -85,4 +85,6 @@ test-suite main
     , tasty-golden
     , tasty-hspec
     , text
+  other-modules:
+      Golden
   default-language: Haskell2010

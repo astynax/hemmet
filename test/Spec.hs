@@ -1,57 +1,32 @@
-import Control.Monad
-import Data.ByteString as BS
-import Data.ByteString.Lazy as BSL hiding (ByteString)
-import Data.Monoid
 import Data.Text as T
-import Data.Text.Encoding
-import System.FilePath
-import System.FilePath.Glob
 import Test.Hspec
 import Test.Tasty
-import Test.Tasty.Golden
 import Test.Tasty.Hspec
 import Text.Megaparsec
 
-import Hemmet
 import Hemmet.BEM.Template as BEM
 import Hemmet.BEM.Tree
-import Hemmet.FileTree.Tree
 import Hemmet.Tree
 
-type GoldenSuite a = (FilePath, Backend a, [(Runner a, String)])
-
-goldenBem :: GoldenSuite BemPayload
-goldenBem =
-    ( "bem"
-    , bem
-    , [(bemHtml, ".html"), (bemCss, ".css"), (bemReactFlux, ".react-flux")])
-
-goldenFileTree :: GoldenSuite FileTreePayload
-goldenFileTree =
-    ("ftree", fileTree, [(treeLike, ".tree"), (bashScript, ".bash")])
+import Golden
 
 main :: IO ()
 main = tests >>= defaultMain
 
 tests :: IO TestTree
 tests = do
-    us <- testGroup "Unit tests" <$> mkUnitTests
-    gs <-
-        testGroup "Golden tests" <$>
-        sequence
-            [ mkGoldenTest "test/tests" goldenBem
-            , mkGoldenTest "test/tests" goldenFileTree
-            ]
+    us <- testGroup "Unit tests" <$> makeUnitTests
+    gs <- testGroup "Golden tests" <$> makeGoldenTests "test/tests"
     return $ testGroup "Tests" [us, gs]
 
-mkUnitTests :: IO [TestTree]
-mkUnitTests =
+makeUnitTests :: IO [TestTree]
+makeUnitTests =
     testSpecs $ do
-        testParser
-        testTransformer
+        parserSpec
+        transformerSpec
 
-testParser :: Spec
-testParser =
+parserSpec :: Spec
+parserSpec =
     describe "Lib.parse" $ do
         it "parses single block" $ do
             "div:foo" `shouldMean` tb "div" "foo" [] []
@@ -115,8 +90,8 @@ testParser =
     e c = el "" c [] []
 
 -- "transform" spec
-testTransformer :: Spec
-testTransformer =
+transformerSpec :: Spec
+transformerSpec =
     describe "Hemmet.toTree" $
     it "transformes a complex example" $
     toTree exampleTemplate `shouldBe` exampleNodes
@@ -184,27 +159,3 @@ exampleNodes =
         ]
   where
     node n cs vs ns = Node n (BemPayload cs vs ns)
-
-mkGoldenTest :: FilePath -> GoldenSuite a -> IO TestTree
-mkGoldenTest root (subdir, backend, renderers) = do
-    let dir = root </> subdir
-    inputFiles <- globDir1 (compile "*.hemmet") dir
-    fmap (testGroup dir) . forM inputFiles $ \path -> do
-        input <- BS.readFile path
-        let baseName = takeBaseName path
-            check (renderer, suffix) =
-                let goldenFile = replaceExtension path $ suffix <> ".golden"
-                in goldenVsStringDiff
-                       (baseName <> suffix)
-                       (\gold new -> ["diff", "-u", gold, new])
-                       goldenFile
-                       (return . BSL.fromStrict . run backend renderer $ input)
-        return . testGroup baseName $ Prelude.map check renderers
-
-run :: Backend a -> Runner a -> ByteString -> ByteString
-run backend runner =
-    either (encodeUtf8 . T.pack . show) (encodeUtf8 . fromResult) .
-    runHemmet backend runner . Prelude.head . T.lines . decodeUtf8
-  where
-    fromResult (Pure t) = t
-    fromResult _ = error "Unexpected effectful result!"
