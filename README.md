@@ -16,10 +16,10 @@ See `hemmet --help` for full options list.
 
 ## Backends
 
-- `bem` works with <a href="#bem">BEM-templates</a>,
-- `ftree` works with <a href="#ftree">file tree templates</a>.
+- `bem` works with [BEM-templates](#bem-templates),
+- `ftree` works with [file tree templates](#file-trees).
 
-# <span id="bem">BEM-templates</span>
+# BEM-templates
 
 Hemmet can expand BEM-templates into
 
@@ -124,7 +124,7 @@ divc_ ("foo baz" <> bar) $ pure ()
 <div class="foo__baz"></div>
 ```
 
-# <span id="ftree">File trees</span>
+# File trees
 
 The `ftree` backend supports these generators:
 
