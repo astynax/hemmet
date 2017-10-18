@@ -30,6 +30,7 @@ bem =
                   then (stripTopNode, T.tail input)
                   else (id, input)
     , parser = template
+    , examples = bemExamples
     }
 
 bemHtml :: BemRunner
@@ -40,3 +41,12 @@ bemCss = PureRunner renderCssM
 
 bemReactFlux :: BemRunner
 bemReactFlux = PureRunner renderReactFluxM
+
+bemExamples :: [(Text, Text)]
+bemExamples =
+    [ ("minimal", ":foo")
+    , ( "complex"
+      , "form:search-form$theme>input.query^red-text>(div.help~hidden_t)+\
+              \span.submit&button~text_small>.hint")
+    , ("transformation: top node strip", "<:block>.elem&mod")
+    ]

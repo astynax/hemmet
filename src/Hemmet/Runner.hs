@@ -20,7 +20,7 @@ data Result
     | Effect (IO ())
 
 runHemmet :: Backend a -> Runner a -> Text -> Either SimpleParseError Result
-runHemmet (Backend getTransformation' parser') runner input =
+runHemmet (Backend getTransformation' parser' _) runner input =
     let (padding, preinput) = T.span (== ' ') input
         (transform, datum) = getTransformation' preinput
     in case parse parser' "template" datum of

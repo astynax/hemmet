@@ -11,7 +11,7 @@ module Hemmet.Rendering
 
 import Control.Monad.Reader
 import Control.Monad.Writer
-import Data.Text as T hiding (null)
+import Data.Text as T
 
 import Hemmet.Tree
 

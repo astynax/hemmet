@@ -2,34 +2,51 @@
 
 module Main where
 
+import Control.Monad
 import Data.Maybe
 import Data.Monoid
 import Data.Text (pack)
-import Data.Text.IO as TIO (putStr)
+import qualified Data.Text.IO as T
 import Options.Applicative
 import System.Exit
 import System.IO
 
 import Hemmet hiding (Parser)
 
+data Input
+    = Expression String
+    | Examples
+    | StdIn
+
 data Options where
-    Options :: forall a. Backend a -> Runner a -> IO String -> Options
+    Options :: forall a. Backend a -> Runner a -> Input -> Options
 
 main :: IO ()
-main = configure >>= run
+main = do
+    (Options backend runner input) <- execParser cli
+    let run' = run backend runner
+    case input of
+        StdIn -> T.getLine >>= run'
+        Expression e -> run' $ pack e
+        Examples ->
+            forM_ (examples backend) $ \(desc, inp) -> do
+                T.putStrLn $ "Example \"" <> desc <> "\""
+                T.putStrLn "<<<"
+                T.putStrLn inp
+                T.putStrLn ">>>"
+                run' inp
+                T.putStrLn ""
+                T.putStrLn ""
   where
-    configure = execParser cli
-    run (Options backend runner input) = do
-        line <- input
-        let lineText = pack line
-        case runHemmet backend runner lineText of
+    run backend runner input =
+        case runHemmet backend runner input of
             Left err -> do
-                Prelude.putStr line -- echo an unchanged line
-                hPutStr stderr $ parseErrorPretty' lineText err
+                T.putStr input -- echo an unchanged line
+                hPutStr stderr $ parseErrorPretty' input err
                 exitWith (ExitFailure 10)
             Right res ->
                 case res of
-                    Pure t -> TIO.putStr t
+                    Pure t -> T.putStr t
                     Effect e -> e
 
 -- options
@@ -77,10 +94,12 @@ argFileTreeRunner = fromMaybe treeLike <$> optional arg'
                 "bash" -> Right bashScript
                 _ -> Left $ "Unknown renderer: " ++ raw
 
-optInput :: Parser (IO String)
-optInput = maybe getLine pure <$> optional opt'
+optInput :: Parser Input
+optInput = fromMaybe StdIn <$> (optional example <|> optional expression)
   where
-    opt' =
+    expression =
+        Expression <$>
         strOption
             (short 'e' <> long "expression" <> metavar "EXPRESSION" <>
              help "Expression (snippet) to expand")
+    example = flag' Examples (long "examples" <> help "Show some examples")

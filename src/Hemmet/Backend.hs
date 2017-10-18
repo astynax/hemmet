@@ -13,4 +13,5 @@ data Backend a = forall b. ToTree b a =>
                            Backend
     { getTransformation :: Text -> (Transformation a, Text)
     , parser :: Parser b
+    , examples :: [(Text, Text)] -- ^ examples in form (description, input)
     }

@@ -2,40 +2,47 @@
 
 **hemmet** is a CLI-tool, that expands one-line templates to markup blocks in
 Haskell/HTML/CSS. Template language is similar to [Emmet](http://emmet.io/)/[ZenCoding](http://www.456bereastreet.com/archive/200909/write_html_and_css_quicker_with_with_zen_coding/)
-but has strong [BEM](https://bem.info/) flavour :)
+but has strong [BEM](https://bem.info/) flavour :) Also hemmet can generate **file trees** (useful for project templating).
 
 ## Usage
 
-`$ hemmet -e EXPRESSION`
+`$ hemmet [BACKEND [GENERATOR]] -e EXPRESSION`
 
 or
 
-`$ echo "EXPRESSION" | hemmet`
+`$ echo "EXPRESSION" | hemmet [BACKEND [GENERATOR]]`
 
 See `hemmet --help` for full options list.
 
-## Renderers
+## Backends
 
-Hemmet can expand templates into
+- `bem` works with <a href="#bem">BEM-templates</a>,
+- `ftree` works with <a href="#ftree">file tree templates</a>.
+
+# <span id="bem">BEM-templates</span>
+
+Hemmet can expand BEM-templates into
 
 - `react-flux` ([react-flux](https://bitbucket.org/s9gf4ult/react-flux) Haskell library eDSL. Default renderer)
 
-`$ echo ":foo>.bar" | hemmet`
+`$ echo ":foo>.bar" | hemmet bem react-flux`
 ```haskell
 divc_ "foo" $ do
   divc_ "foo__bar" $ pure ()
 ```
+
 - `html`
 
-`$ echo ":foo>.bar" | hemmet html`
+`$ echo ":foo>.bar" | hemmet bem html`
 ```html
 <div class="foo">
   <div class="foo__bar"></div>
 </div>
 ```
+
 - `css`
 
-`$ echo ":foo>.bar" | hemmet css`
+`$ echo ":foo>.bar" | hemmet bem css`
 ```css
 .foo {
 }
@@ -44,43 +51,46 @@ divc_ "foo" $ do
 }
 ```
 
-## Template language syntax
+## Template syntax
 
 ### Nesting
 
 `:block1>(.el1>(.el2)+.el3)+:block2`
 
-```haskell
-divc_ "block1" $ do
-  divc_ "block1__el1" $ do
-    divc_ "block1__el2" $ pure ()
-  divc_ "block1__el3" $ pure ()
-divc_ "block2" $ pure ()
+```html
+<div class="block1">
+  <div class="block1__el1">
+    <div class="block1__el2"></div>
+  </div>
+  <div class="block1__el3"></div>
+</div>
+<div class="block2"></div>
 ```
 
 ### Tags
 
 `button:submit`
 
-```haskell
-buttonc_ "submit" $ pure ()
+```html
+<button class="submit"></button>
 ```
 
 ### Modifiers
 
 `:foo>.bar~font_small~hidden_t`
 
-```haskell
-divc_ "foo" $ do
-  divc_ "foo__bar foo__bar_font_small foo__bar_hidden_t" $ pure ()
+```html
+<div class="foo">
+  <div class="foo__bar foo__bar_font_small foo__bar_hidden_t"></div>
+</div>
 ```
 
 ### Mixes
 
 `:foo^theme-ocean`
 
-```haskell
-divc_ "foo theme-ocean" $ pure ()
+```html
+<div class="foo theme-ocean"></div>
 ```
 
 ### Variables
@@ -91,28 +101,74 @@ divc_ "foo theme-ocean" $ pure ()
 divc_ ("foo baz" <> bar) $ pure ()
 ```
 
-**Note:** at the moment it works only for `react-flux`
+**Note:** at the moment it works only for `react-flux` generator!
 
 ### Element+Block
 
 `:form>.submit&button>.label`
 
-```haskell
-divc_ "form" $ do
-  divc_ "form__submit button" $ do
-    divc_ "button__label" $ pure ()
+```html
+<div class="form">
+  <div class="form__submit button">
+    <div class="button__label"></div>
+  </div>
+</div>
 ```
 
 ### Root node stripping
 
-`<:foo>.bar+.baz`
+`<:foo>.bar+.baz` (note leading `<`)
 
-```haskell
-divc_ "foo__bar" $ pure ()
-divc_ "foo__baz" $ pure ()
+```html
+<div class="foo__bar"></div>
+<div class="foo__baz"></div>
 ```
 
-## integration with Emacs
+# <span id="ftree">File trees</span>
+
+The `ftree` backend supports these generators:
+
+- `tree` - pseudographical file tree representation
+
+`$ echo "docs/{todo.txt to_read.txt}" | hemmet ftree tree`
+```
+.
+└── docs/
+    ├── to_read.txt
+    └── todo.txt
+```
+
+- `bash`
+
+`$ echo "docs/{todo.txt to_read.txt}" | hemmet ftree bash`
+```bash
+#!/bin/bash
+set -euf -o pipefail
+
+mkdir "docs" && pushd "docs"
+  touch "to_read.txt"
+  touch "todo.txt"
+popd
+```
+
+## Generating Haskell source trees
+
+With `|hs|` prefix you can generate convinient file trees:
+`$ echo "|hs|app/main src/!lib/{types utils}" | hemmet ftree tree`
+```
+.
+├── App/
+│   └── Main.hs
+└── src/
+    ├── Lib/
+    │   ├── Types.hs
+    │   └── Utils.hs
+    └── Lib.hs
+```
+
+Note the `!` before `lib` in template string - this flag means "also create a `.hs` module for this folder".
+
+# Integration with Emacs
 
 1. put a `hemmet` binary somewhere in `$PATH`
 1. add to your `.emacs`
