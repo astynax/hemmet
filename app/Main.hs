@@ -19,11 +19,11 @@ data Input
     | StdIn
 
 data Options where
-    Options :: forall a. Backend a -> Runner a -> Input -> Options
+    Options :: forall a. Input -> Runner a -> Backend a -> Options
 
 main :: IO ()
 main = do
-    (Options backend runner input) <- execParser cli
+    (Options input runner backend) <- execParser cli
     let run' = run backend runner
     case input of
         StdIn -> T.getLine >>= run'
@@ -61,41 +61,26 @@ cli =
 commands :: Parser Options
 commands =
     subparser $
-    mkCommand "bem" "Generates BEM markup" bem argBemRunner <>
-    mkCommand "ftree" "Generates the file trees" fileTree argFileTreeRunner
-  where
-    mkCommand cmd desc backend argRunner =
-        command cmd $
-        info (Options backend <$> argRunner <*> optInput <**> helper) $
-        progDesc desc
+    cmd "bem" (bem <&> argBemRunner) "Generates BEM markup" <>
+    cmd "ftree" (fileTree <&> argFileTreeRunner) "Generates the file trees"
 
-argBemRunner :: Parser BemRunner
-argBemRunner = fromMaybe bemReactFlux <$> optional arg'
+argBemRunner :: Parser (BemBackend -> Options)
+argBemRunner = subparser $ flux <> html <> css
   where
-    arg' = argument reader $ metavar "html|css|react-flux"
-    reader =
-        eitherReader $ \raw ->
-            case raw of
-                "" -> Right bemReactFlux
-                "react-flux" -> Right bemReactFlux
-                "html" -> Right bemHtml
-                "css" -> Right bemCss
-                _ -> Left $ "Unknown renderer: " ++ raw
+    flux =
+        cmd "react-flux" (bemReactFlux <&> optInput) "Generates react-flux code"
+    html = cmd "html" (bemHtml <&> optInput) "Generates HTML"
+    css = cmd "css" (bemCss <&> optInput) "Generates CSS"
 
-argFileTreeRunner :: Parser FileTreeRunner
-argFileTreeRunner = fromMaybe treeLike <$> optional arg'
+argFileTreeRunner :: Parser (FileTreeBackend -> Options)
+argFileTreeRunner = subparser $ tree <> bash
   where
-    arg' = argument reader $ metavar "tree|bash"
-    reader =
-        eitherReader $ \raw ->
-            case raw of
-                "" -> Right treeLike
-                "tree" -> Right treeLike
-                "bash" -> Right bashScript
-                _ -> Left $ "Unknown renderer: " ++ raw
+    tree = cmd "tree" (treeLike <&> optInput) "Generates GNU Tree-like output"
+    bash = cmd "bash" (bashScript <&> optInput) "Generates Bash-script"
 
-optInput :: Parser Input
-optInput = fromMaybe StdIn <$> (optional example <|> optional expression)
+optInput :: Parser (Runner a -> Backend a -> Options)
+optInput =
+    Options . fromMaybe StdIn <$> (optional example <|> optional expression)
   where
     expression =
         Expression <$>
@@ -103,3 +88,9 @@ optInput = fromMaybe StdIn <$> (optional example <|> optional expression)
             (short 'e' <> long "expression" <> metavar "EXPRESSION" <>
              help "Expression (snippet) to expand")
     example = flag' Examples (long "examples" <> help "Show some examples")
+
+cmd :: String -> Parser a -> String -> Mod CommandFields a
+cmd c p desc = command c $ info (p <**> helper) $ progDesc desc
+
+(<&>) :: Functor f => a -> f (a -> b) -> f b
+x <&> f = ($ x) <$> f
