@@ -4,5 +4,11 @@ packages:
   - '.'
 
 extra-deps:
+  # megaparsec & deps
   - megaparsec-6.1.1
   - parser-combinators-0.2.0
+  # brick & deps
+  - brick-0.28
+  - data-clist-0.1.2.0
+  - word-wrap-0.4.1
+  - vty-5.18.1

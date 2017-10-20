@@ -18,34 +18,43 @@ default-extensions:
   - MultiParamTypeClasses
   - OverloadedStrings
   - RecordWildCards
+  - TupleSections
+
+_typical_executable: &exe
+  main: Main.hs
+  ghc-options:
+    - -Werror
+    - -Wall
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+  dependencies:
+    - base
+    - hemmet
 
 executables:
   hemmet:
+    <<: *exe
     source-dirs:
-      - app
-    main: Main.hs
-    ghc-options:
-      - -Werror
-      - -Wall
-      - -threaded
-      - -rtsopts
-      - -with-rtsopts=-N
-    dependencies:
-      - base
-      - hemmet
-      - optparse-applicative
-      - text
+      - app/hemmet
+  hemmeti:
+    <<: *exe
+    source-dirs:
+      - app/hemmeti
 
 library:
   source-dirs:
     - src
   dependencies:
     - base
+    - brick
+    - data-default
     - mtl
     - megaparsec
+    - optparse-applicative
     - text
+    - vty
   ghc-options:
-    - -Werror
     - -Wall
 
 tests:

@@ -13,11 +13,11 @@ import Hemmet.Tree
 
 data Runner a
     = PureRunner (Renderer a)
-    | EffectfulRunner (Text -> Tree a -> IO ())
+    | EffectfulRunner (Text -> Tree a -> IO Text)
 
 data Result
     = Pure Text
-    | Effect (IO ())
+    | Effect (IO Text)
 
 runHemmet :: Backend a -> Runner a -> Text -> Either SimpleParseError Result
 runHemmet (Backend getTransformation' parser' _) runner input =

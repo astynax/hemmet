@@ -26,9 +26,12 @@ source-repository head
 library
   hs-source-dirs:
       src
-  default-extensions: GADTs LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards
+  default-extensions: GADTs LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards TupleSections
   exposed-modules:
       Hemmet
+      Hemmet.App
+      Hemmet.App.Cli
+      Hemmet.App.TUI
       Hemmet.Backend
       Hemmet.BEM
       Hemmet.BEM.Rendering
@@ -46,23 +49,36 @@ library
       Hemmet.Tree
   build-depends:
       base
+    , brick
+    , data-default
     , mtl
     , megaparsec
+    , optparse-applicative
     , text
+    , vty
   default-language: Haskell2010
-  ghc-options: -Werror -Wall
+  ghc-options: -Wall
 
 executable hemmet
   main-is: Main.hs
   hs-source-dirs:
-      app
-  default-extensions: GADTs LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards
+      app/hemmet
+  default-extensions: GADTs LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards TupleSections
   ghc-options: -Werror -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base
     , hemmet
-    , optparse-applicative
-    , text
+  default-language: Haskell2010
+
+executable hemmeti
+  main-is: Main.hs
+  hs-source-dirs:
+      app/hemmeti
+  default-extensions: GADTs LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards TupleSections
+  ghc-options: -Werror -Wall -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base
+    , hemmet
   default-language: Haskell2010
 
 test-suite main
@@ -70,7 +86,7 @@ test-suite main
   main-is: Spec.hs
   hs-source-dirs:
       test
-  default-extensions: GADTs LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards
+  default-extensions: GADTs LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards TupleSections
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base

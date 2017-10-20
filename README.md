@@ -6,24 +6,24 @@ but has strong [BEM](https://bem.info/) flavour :) Also hemmet can generate **fi
 
 ## Usage
 
-`$ hemmet [BACKEND [GENERATOR]] -e EXPRESSION`
+`$ hemmet BACKEND GENERATOR -e EXPRESSION`
 
 or
 
-`$ echo "EXPRESSION" | hemmet [BACKEND [GENERATOR]]`
+`$ echo "EXPRESSION" | hemmet BACKEND GENERATOR`
 
 See `hemmet --help` for full options list.
 
 ## Backends
 
-- `bem` works with [BEM-templates](#bem-templates) (default),
+- `bem` works with [BEM-templates](#bem-templates),
 - `ftree` works with [file tree templates](#file-trees).
 
 # BEM-templates
 
 Hemmet can expand BEM-templates into
 
-- `react-flux` - eDSL for [react-flux](https://bitbucket.org/s9gf4ult/react-flux) Haskell library (default generator)
+- `react-flux` - eDSL for [react-flux](https://bitbucket.org/s9gf4ult/react-flux) Haskell library
 
 `$ echo ":foo>.bar" | hemmet bem react-flux`
 ```haskell
