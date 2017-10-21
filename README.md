@@ -87,10 +87,10 @@ divc_ "foo" $ do
 
 ### Variables
 
-`:foo$bar^baz`
+`:foo$bar~baz`
 
 ```haskell
-divc_ ("foo baz" <> bar) $ pure ()
+divc_ ("foo foo_baz" <> bar) $ pure ()
 ```
 
 **Note:** at the moment it works only for `react-flux` generator!
