@@ -103,13 +103,13 @@ divc_ ("foo baz" <> bar) $ pure ()
 
 **Note:** at the moment it works only for `react-flux` generator!
 
-### Element+Block
+### Element+Block mix (i.e. *Service block*)
 
-`:form>.submit&button>.label`
+`:form>.submit-button:button>.label`
 
 ```html
 <div class="form">
-  <div class="form__submit button">
+  <div class="button form__submit-button">
     <div class="button__label"></div>
   </div>
 </div>

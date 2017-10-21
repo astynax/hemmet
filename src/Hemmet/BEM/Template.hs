@@ -32,48 +32,49 @@ newtype Block =
 
 data Element
     = Element Params
-    | ElementBlock Text
-                   Params
+    | ElementBlock Text -- ^ element name
+                   [Addon] -- ^ element addons
+                   Params -- ^ block params
     deriving (Show, Eq)
 
 data Addon
     = Mod Text
-    | Mix Text
     | Var Text
     deriving (Show, Eq)
 
-type CtorAndName a = (Params -> a, Text)
+type Context a = ([Addon], Params -> a, Text)
 
 template :: Parser Template
 template = Template <$> many_ alwaysBlock <* eof
   where
-    alwaysBlock = templateNode $ (,) Block <$> blockName
+    alwaysBlock = templateNode $ (,,) [] Block <$> blockName
 
-templateNode :: Parser (CtorAndName a) -> Parser a
+templateNode :: Parser (Context a) -> Parser a
 templateNode cnn = do
     _pTagName <- try_ identifier
-    (ctor, _pName) <- cnn
-    _pAddons <- many addon
+    (prevAddons, ctor, _pName) <- cnn
+    _pAddons <- (++) prevAddons <$> many addon
     _pChilds <- try_ childs
     return $ ctor Params {..}
   where
     childs = char '>' *> many_ (templateNode blockOrElement)
 
-blockOrElement :: Parser (CtorAndName TemplateNode)
+blockOrElement :: Parser (Context TemplateNode)
 blockOrElement = mkBlock <|> mkElem
 
-mkBlock :: Parser (CtorAndName TemplateNode)
-mkBlock = (,) (Right . Block) <$> blockName
+mkBlock :: Parser (Context TemplateNode)
+mkBlock = (,,) [] (Right . Block) <$> blockName
 
-mkElem :: Parser (CtorAndName TemplateNode)
+mkElem :: Parser (Context TemplateNode)
 mkElem = do
     _ <- char '.'
     name <- kebabCasedName
-    mbBlockName <- optional (char '&' *> kebabCasedName)
+    addons <- many addon
+    mbBlockName <- optional (char ':' *> kebabCasedName)
     return $
         case mbBlockName of
-            Just name' -> (Left . ElementBlock name, name')
-            _ -> (Left . Element, name)
+            Just name' -> ([], Left . ElementBlock name addons, name')
+            _ -> (addons, Left . Element, name)
 
 blockName :: Parser Text
 blockName = char ':' *> kebabCasedName
@@ -85,10 +86,9 @@ identifier = cons <$> firstChar <*> (pack <$> many restChar)
     restChar = firstChar <|> digitChar
 
 addon :: Parser Addon
-addon = mod_ <|> mix <|> var
+addon = mod_ <|> var
   where
     mod_ = Mod <$> (char '~' *> modName)
-    mix = Mix <$> (char '^' *> kebabCasedName)
     var = Var <$> (char '$' *> identifier)
 
 kebabCasedName :: Parser Text
@@ -119,10 +119,13 @@ transformBlock _ (Block p) = transform' (flip const) (_pName p) p
 
 transformElement :: Text -> Element -> Node BemPayload
 transformElement parent (Element p) = transform' (prefix "__") parent p
-transformElement parent (ElementBlock e p) =
-    let n = transformBlock parent (Block p)
+transformElement parent (ElementBlock elName elAddons blPayload) =
+    let n = transformBlock parent (Block blPayload)
+        (Node _ (BemPayload cs vs _)) =
+            transformElement parent $ Element $ Params "" elName elAddons []
         pl = _nPayload n
-        newPayload = pl {_bpClasses = prefix "__" parent e : _bpClasses pl}
+        newPayload =
+            pl {_bpClasses = _bpClasses pl ++ cs, _bpVars = _bpVars pl ++ vs}
     in n {_nPayload = newPayload}
 
 transform' :: (Text -> Text -> Text) -> Text -> Params -> Node BemPayload
@@ -134,7 +137,6 @@ transform' use parent (Params _nName name addons childs) = Node {..}
         (n :) $
         flip mapMaybe addons $ \case
             Var _ -> Nothing
-            Mix m -> Just m
             Mod m -> Just $ prefix "_" n m
     _bpVars =
         flip mapMaybe addons $ \case

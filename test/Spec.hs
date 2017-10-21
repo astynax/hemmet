@@ -37,9 +37,6 @@ parserSpec =
         it "parses block/element modifiers" $ do
             ":b~m1~m2" `shouldMean` tb "" "b" [Mod "m1", Mod "m2"] []
             ":b>.e~m1~m2" `shouldMean` te "" "e" [Mod "m1", Mod "m2"] []
-        it "parses block/element mixes" $ do
-            ":b^m1^m2" `shouldMean` tb "" "b" [Mix "m1", Mix "m2"] []
-            ":b>.e^m1^m2" `shouldMean` te "" "e" [Mix "m1", Mix "m2"] []
         it "parses block/element vars" $ do
             ":b$m1$m2" `shouldMean` tb "" "b" [Var "m1", Var "m2"] []
             ":b>.e$m1$m2" `shouldMean` te "" "e" [Var "m1", Var "m2"] []
@@ -58,10 +55,6 @@ parserSpec =
             shouldMean ":b~snake_case" $ tb "" "b" [Mod "snake_case"] []
             shouldFail ":b~uPPer_case"
             shouldFail ":b~1leading-digit"
-            -- mix names
-            shouldFail ":b^snake_case"
-            shouldFail ":b^uPPer_case"
-            shouldFail ":b^1leading-digit"
             -- var names
             shouldFail ":b$kebab-case"
             shouldMean ":b$_underscored" $ tb "" "b" [Var "_underscored"] []
@@ -73,9 +66,16 @@ parserSpec =
             ":a>.e1+.e2" `shouldMean` b "a" [e "e1", e "e2"]
             ":a>(.e1+.e2)" `shouldMean` b "a" [e "e1", e "e2"]
             ":a>(.e1)+:b" `shouldMean` (b "a" [e "e1"] ++ b "b" [])
-        it "parses an element-block" $
-            ":a>.b&c>.d" `shouldMean`
-            b "a" [Left . ElementBlock "b" $ Params "" "c" [] [e "d"]]
+        it "parses an element+block mix" $
+            ":b>.be:s>.se" `shouldMean`
+            b "b" [Left . ElementBlock "be" [] $ Params "" "s" [] [e "se"]]
+        it "parses an element+block mix with addons" $
+            ":b>.e~em:s~sm" `shouldMean`
+            b
+                "b"
+                [ Left . ElementBlock "e" [Mod "em"] $
+                  Params "" "s" [Mod "sm"] []
+                ]
         it "parses a complex example" $
             q exampleQuery `shouldBe` Just exampleTemplate
   where
@@ -100,10 +100,10 @@ transformerSpec =
 exampleQuery :: Text
 exampleQuery =
     "form:search-form$theme>\
-       \input.query^red-text>\
+       \input.query>\
          \(div.help~hidden_t)\
        \+\
-       \span.submit&button~text_small\
+       \span.submit-button~disabled_t:button~text_small\
          \>.hint"
 
 exampleTemplate :: Template
@@ -119,10 +119,10 @@ exampleTemplate =
                 Params
                     "input"
                     "query"
-                    [Mix "red-text"]
+                    []
                     [Left $ Element $ Params "div" "help" [Mod "hidden_t"] []]
               , Left $
-                ElementBlock "submit" $
+                ElementBlock "submit-button" [Mod "disabled_t"] $
                 Params
                     "span"
                     "button"
@@ -142,7 +142,7 @@ exampleNodes =
               ["theme"]
               [ node
                     "input"
-                    ["search-form__query", "red-text"]
+                    ["search-form__query"]
                     []
                     [ node
                           "div"
@@ -152,7 +152,11 @@ exampleNodes =
                     ]
               , node
                     "span"
-                    ["search-form__submit", "button", "button_text_small"]
+                    [ "button"
+                    , "button_text_small"
+                    , "search-form__submit-button"
+                    , "search-form__submit-button_disabled_t"
+                    ]
                     []
                     [node "" ["button__hint"] [] []]
               ]

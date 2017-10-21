@@ -7,9 +7,6 @@
 .button_text_small {
 }
 
-.red-text {
-}
-
 .search-form {
 }
 
@@ -22,6 +19,9 @@
 .search-form__query {
 }
 
-.search-form__submit {
+.search-form__submit-button {
+}
+
+.search-form__submit-button_disabled_t {
 }
 

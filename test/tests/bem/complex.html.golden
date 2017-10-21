@@ -1,8 +1,8 @@
 <form class="search-form">
-  <input class="search-form__query red-text">
+  <input class="search-form__query">
     <div class="search-form__help search-form__help_hidden_t"></div>
   </input>
-  <span class="search-form__submit button button_text_small">
+  <span class="button button_text_small search-form__submit-button search-form__submit-button_disabled_t">
     <div class="button__hint"></div>
   </span>
 </form>

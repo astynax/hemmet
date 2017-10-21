@@ -46,7 +46,7 @@ bemExamples :: [(Text, Text)]
 bemExamples =
     [ ("minimal", ":foo")
     , ( "complex"
-      , "form:search-form$theme>input.query^red-text>(div.help~hidden_t)+\
-              \span.submit&button~text_small>.hint")
-    , ("transformation: top node strip", "<:block>.elem&mod")
+      , "form:search-form$theme>input.query>(div.help~hidden_t)+\
+              \span.submit-button~disabled_t:button~text_small>.hint")
+    , ("transformation: top node strip", "<:block>.elem")
     ]
