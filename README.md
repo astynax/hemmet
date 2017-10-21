@@ -67,7 +67,7 @@ divc_ "foo" $ do
 <div class="block2"></div>
 ```
 
-### Tags
+### Explicit tags
 
 `button:submit`
 
@@ -85,14 +85,6 @@ divc_ "foo" $ do
 </div>
 ```
 
-### Mixes
-
-`:foo^theme-ocean`
-
-```html
-<div class="foo theme-ocean"></div>
-```
-
 ### Variables
 
 `:foo$bar^baz`
@@ -103,7 +95,7 @@ divc_ ("foo baz" <> bar) $ pure ()
 
 **Note:** at the moment it works only for `react-flux` generator!
 
-### Element+Block mix (i.e. *Service block*)
+### Element+Block mixes (for example *service blocks*)
 
 `:form>.submit-button:button>.label`
 
