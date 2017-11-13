@@ -16,12 +16,16 @@ data Focus
     | Output
     deriving (Eq, Ord, Show)
 
-type State = (Editor Text Focus, Text, Focus)
+data State = State
+    { sEditor :: Editor Text Focus
+    , sOutput :: Text
+    , sFocus :: Focus
+    }
 
 type Evaluator = Text -> IO Text
 
 tui :: Evaluator -> IO ()
-tui run = void $ defaultMain app $ (editorText Input (Just 1) "", "", Input)
+tui run = void $ defaultMain app $ State (editorText Input (Just 1) "") "" Input
   where
     app :: App State Event Focus
     app =
@@ -34,36 +38,55 @@ tui run = void $ defaultMain app $ (editorText Input (Just 1) "", "", Input)
         }
 
 draw :: State -> [Widget Focus]
-draw (ed, out, focus) = [input <=> output]
+draw State {..} = [input <=> output]
   where
     decorate f
-        | focus == f = updateAttrMap $ setBorderColor yellow
+        | sFocus == f = updateAttrMap $ setBorderColor yellow
         | otherwise = id
     input =
-        decorate Input $ border $ vLimit 1 $ renderEditor re (focus == Input) ed
-    output = decorate Output $ border $ viewport Output Both $ txt out
+        decorate Input $
+        border $ vLimit 1 $ renderEditor re (sFocus == Input) sEditor
+    output = decorate Output $ border $ viewport Output Both $ txt sOutput
     re (t:_) = txt t
     re [] = txt ""
 
 handle ::
        Evaluator -> State -> BrickEvent Focus Event -> EventM Focus (Next State)
-handle eval s@(ed, _, focus) (VtyEvent e) =
+handle eval s@State {..} (VtyEvent e) =
     case e of
         (EvKey KEsc []) -> halt s
         (EvKey (KChar 'c') [MCtrl]) -> halt s
-        _
-            | focus == Input -> do
-                ed' <- handleEditorEvent e ed
-                out <- liftIO $ eval $ mconcat $ getEditContents ed'
-                continue (ed', out, focus)
-        _ -> continue s
+        (EvKey (KChar '\t') []) ->
+            continue
+                s
+                { sFocus =
+                      case sFocus of
+                          Input -> Output
+                          Output -> Input
+                }
+        _ ->
+            case sFocus of
+                Input -> do
+                    ed' <- handleEditorEvent e sEditor
+                    out' <- liftIO $ eval $ mconcat $ getEditContents ed'
+                    continue s {sEditor = ed', sOutput = out'}
+                Output -> do
+                    case e of
+                        (EvKey KUp []) -> vScrollBy vps (-1)
+                        (EvKey KDown []) -> vScrollBy vps 1
+                        (EvKey KLeft []) -> hScrollBy vps (-1)
+                        (EvKey KRight []) -> hScrollBy vps 1
+                        _ -> pure ()
+                    continue s
+  where
+    vps = viewportScroll Output
 handle _ s _ = continue s
 
 setBorderColor :: Color -> AttrMap -> AttrMap
 setBorderColor c = applyAttrMappings [(borderAttr, defAttr `withForeColor` c)]
 
 chooseCursor :: State -> [CursorLocation Focus] -> Maybe (CursorLocation Focus)
-chooseCursor (_, _, Input) ps =
+chooseCursor (sFocus -> Input) ps =
     case [p | p <- ps, cursorLocationName p == Just Input] of
         (x:_) -> Just x
         _ -> Nothing

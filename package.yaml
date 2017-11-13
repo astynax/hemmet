@@ -19,6 +19,7 @@ default-extensions:
   - OverloadedStrings
   - RecordWildCards
   - TupleSections
+  - ViewPatterns
 
 _typical_executable: &exe
   main: Main.hs
