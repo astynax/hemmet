@@ -22,3 +22,17 @@ haskellify (Directory nodes) = Directory $ concatMap process nodes
         | name `elem` ["src", "test"] = name
         | otherwise = camelCase name
     camelCase = T.concat . map toTitle . split (== '-')
+
+pythonify :: Transformation FileTreePayload
+pythonify File = File
+pythonify (Directory nodes) = Directory $ concatMap process nodes
+  where
+    process (Node name File) = [Node (pythonifyFile name) File]
+    process (Node name (Directory ns)) =
+        let
+          initFile
+              | name `elem` ["src", "test"] = []
+              | otherwise = [Node "__init__.py" File]
+        in [Node (snakeCase name) . Directory $ initFile ++ concatMap process ns]
+    pythonifyFile = (<> ".py") . snakeCase
+    snakeCase = T.intercalate "_" . split (== '-')

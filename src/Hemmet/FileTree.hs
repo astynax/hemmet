@@ -27,6 +27,7 @@ fileTree =
   where
     get input
         | "|hs|" `isPrefixOf` input = (haskellify, T.drop 4 input)
+        | "|py|" `isPrefixOf` input = (pythonify, T.drop 4 input)
         | otherwise = (id, input)
 
 bashScript :: FileTreeRunner
