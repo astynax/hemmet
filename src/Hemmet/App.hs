@@ -4,7 +4,6 @@ module Hemmet.App
     ) where
 
 import Control.Monad
-import Data.Monoid
 import Data.Text (pack)
 import qualified Data.Text.IO as T
 import Options.Applicative
@@ -36,7 +35,7 @@ runCli = do
         case runHemmet backend runner input of
             Left err -> do
                 T.putStr input -- echo an unchanged line
-                hPutStr stderr $ parseErrorPretty' input err
+                hPutStr stderr $ errorBundlePretty err
                 exitWith (ExitFailure 10)
             Right (Pure t) -> T.putStr t
             Right (Effect e) -> e >>= T.putStr
@@ -48,6 +47,6 @@ runTui = do
   where
     run backend runner input =
         case runHemmet backend runner input of
-            Left err -> pure . pack $ parseErrorPretty' input err
+            Left err -> pure . pack $ errorBundlePretty err
             Right (Pure t) -> pure t
             Right (Effect e) -> e

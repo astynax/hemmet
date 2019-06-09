@@ -11,4 +11,4 @@ import Text.Megaparsec.Char as M
 
 type Parser = Parsec Void Text
 
-type SimpleParseError = ParseError Char Void
+type SimpleParseError = ParseErrorBundle Text Void

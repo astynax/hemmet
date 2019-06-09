@@ -1,6 +1,5 @@
 module Hemmet.FileTree.Transformation where
 
-import Data.Monoid
 import Data.Text as T hiding (concatMap, map)
 
 import Hemmet.Tree

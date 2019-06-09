@@ -5,7 +5,6 @@ module Golden
 import Control.Monad
 import Data.ByteString as BS
 import Data.ByteString.Lazy as BSL hiding (ByteString)
-import Data.Monoid
 import Data.Text as T
 import Data.Text.Encoding
 import System.FilePath

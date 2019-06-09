@@ -2,7 +2,6 @@ module Hemmet.BEM.Template where
 
 import Data.Char
 import Data.Maybe
-import Data.Monoid
 import Data.Text hiding (map)
 
 import Hemmet.Megaparsec

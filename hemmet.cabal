@@ -1,6 +1,10 @@
--- This file has been generated from package.yaml by hpack version 0.17.1.
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
+--
+-- hash: 1d55cc2e37ed57f4311c629d7befe2113f093b5661838b91d3141cd477bf01e2
 
 name:                hemmet
 version:             0.1.0.0
@@ -14,8 +18,6 @@ maintainer:          astynax84@gmail.com
 copyright:           Aleksey Pirogov aka astynax
 category:            Text
 build-type:          Simple
-cabal-version:       >= 1.10
-
 extra-source-files:
     README.md
 
@@ -47,27 +49,30 @@ library
       Hemmet.Rendering
       Hemmet.Runner
       Hemmet.Tree
+  other-modules:
+      Paths_hemmet
   build-depends:
       base
     , brick
-    , data-default
-    , mtl
     , megaparsec
+    , mtl
     , optparse-applicative
     , text
     , vty
   default-language: Haskell2010
-  ghc-options: -Wall
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wmissing-exported-signatures
 
 executable hemmet
   main-is: Main.hs
   hs-source-dirs:
       app/hemmet
   default-extensions: GADTs LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards TupleSections ViewPatterns
-  ghc-options: -Werror -Wall -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wmissing-exported-signatures -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base
     , hemmet
+  other-modules:
+      Paths_hemmet
   default-language: Haskell2010
 
 executable hemmeti
@@ -75,10 +80,12 @@ executable hemmeti
   hs-source-dirs:
       app/hemmeti
   default-extensions: GADTs LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards TupleSections ViewPatterns
-  ghc-options: -Werror -Wall -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wmissing-exported-signatures -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base
     , hemmet
+  other-modules:
+      Paths_hemmet
   default-language: Haskell2010
 
 test-suite main
@@ -87,15 +94,14 @@ test-suite main
   hs-source-dirs:
       test
   default-extensions: GADTs LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards TupleSections ViewPatterns
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wmissing-exported-signatures -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base
+      Glob
+    , base
     , bytestring
     , filepath
-    , Glob
     , hemmet
     , hspec
-    , mtl
     , megaparsec
     , tasty
     , tasty-golden
@@ -103,4 +109,5 @@ test-suite main
     , text
   other-modules:
       Golden
+      Paths_hemmet
   default-language: Haskell2010

@@ -21,14 +21,23 @@ default-extensions:
   - TupleSections
   - ViewPatterns
 
-_typical_executable: &exe
-  main: Main.hs
+ghc-options:
+  - -Wall
+  - -Wcompat
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wredundant-constraints
+  - -Wmissing-exported-signatures
+
+_executable-options: &exe-opts
   ghc-options:
-    - -Werror
-    - -Wall
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+
+_typical-executable: &exe
+  <<: *exe-opts
+  main: Main.hs
   dependencies:
     - base
     - hemmet
@@ -49,17 +58,15 @@ library:
   dependencies:
     - base
     - brick
-    - data-default
     - mtl
     - megaparsec
     - optparse-applicative
     - text
     - vty
-  ghc-options:
-    - -Wall
 
 tests:
   main:
+    <<: *exe-opts
     source-dirs:
       - test
     main: Spec.hs
@@ -70,13 +77,9 @@ tests:
       - Glob
       - hemmet
       - hspec
-      - mtl
       - megaparsec
       - tasty
       - tasty-golden
       - tasty-hspec
       - text
-    ghc-options:
-      - -threaded
-      - -rtsopts
-      - -with-rtsopts=-N
+

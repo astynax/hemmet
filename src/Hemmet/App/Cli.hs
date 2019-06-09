@@ -4,7 +4,6 @@
 module Hemmet.App.Cli where
 
 import Data.Maybe
-import Data.Monoid
 import Options.Applicative
 
 import Hemmet hiding (Parser)

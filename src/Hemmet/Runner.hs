@@ -24,7 +24,7 @@ runHemmet (Backend getTransformation' parser' _) runner input =
     let (padding, preinput) = T.span (== ' ') input
         (transform, datum) = getTransformation' preinput
     in case parse parser' "template" datum of
-           Left err -> Left err
+           Left err  -> Left err
            Right tpl ->
                let tree = transform $ toTree tpl
                in Right $
