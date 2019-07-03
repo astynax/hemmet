@@ -1,0 +1,13 @@
+.
+├── src/
+│   └── package/
+│       ├── __init__.py
+│       ├── bar.py
+│       └── foo/
+│           └── __init__.py
+└── test/
+    └── package/
+        ├── __init__.py
+        ├── bar.py
+        └── foo/
+            └── __init__.py

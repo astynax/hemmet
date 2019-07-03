@@ -1,6 +1,16 @@
 #!/bin/bash
+cat <<PREVIEW_END
+This file tree will be created:
+.
+├── a
+├── aa
+├── b
+├── bb
+├── c
+└── cc
+PREVIEW_END
+read -p "Press any key to continue..." -n1 -s
 set -euf -o pipefail
-
 touch "a"
 touch "aa"
 touch "b"

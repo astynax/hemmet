@@ -1,6 +1,6 @@
 module Hemmet.FileTree.Template
-    ( template
-    ) where
+  ( template
+  ) where
 
 import Data.Text as T
 
@@ -26,9 +26,9 @@ name :: Parser Text
 name = T.pack <$> some (satisfy $ not . isSpecial)
 
 many_ :: Parser a -> Parser [a]
-many_ p = ps <|> single p <|> none
+many_ p = ps <|> singleP p <|> none
   where
-    single = fmap (: [])
+    singleP = fmap (: [])
     ps = between (char '{') (char '}') (p `sepBy` char ' ')
     none = [] <$ notFollowedBy name
 
@@ -36,4 +36,4 @@ isSpecial :: Char -> Bool
 isSpecial ' ' = True
 isSpecial '/' = True
 isSpecial '}' = True
-isSpecial _ = False
+isSpecial _   = False

@@ -1,7 +1,14 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE KindSignatures #-}
 
-module Hemmet.App.Cli where
+module Hemmet.App.Cli
+  ( Options(..)
+  , Input(..)
+  , Output(..)
+  , cliWith
+  , optInput
+  , optOutput
+  ) where
 
 import Data.Maybe
 import Options.Applicative
@@ -9,30 +16,34 @@ import Options.Applicative
 import Hemmet hiding (Parser)
 
 data Input
-    = Expression String
-    | Examples
-    | StdIn
+  = Expression String
+  | Examples
+  | StdIn
+
+data Output
+  = Cmd String
+  | File FilePath
+  | StdOut
 
 data Options :: * -> * where
-    Options :: forall a e. e -> Runner a -> Backend a -> Options e
+  Options :: forall a e. e -> Runner a -> Backend a -> Options e
 
 cliWith :: Parser a -> ParserInfo (Options a)
 cliWith extra =
-    info
-        (commands extra <**> helper)
-        (progDesc "Expands the snippets" <>
-         header "Hemmet, the snippet expander" <>
-         fullDesc)
+  info
+    (commands extra <**> helper)
+    (progDesc "Expands the snippets" <>
+      header "Hemmet, the snippet expander" <>
+      fullDesc)
 
 commands :: Parser a -> Parser (Options a)
 commands extra = subparser $ bemC <> ftreeC
   where
     bemC = cmd "bem" (bem <&> argBemRunner extra) "Generates BEM markup"
     ftreeC =
-        cmd
-            "ftree"
-            (fileTree <&> argFileTreeRunner extra)
-            "Generates the file trees"
+      cmd "ftree"
+        (fileTree <&> argFileTreeRunner extra)
+        "Generates the file trees"
 
 argBemRunner :: Parser a -> Parser (BemBackend -> Options a)
 argBemRunner extra = subparser $ flux <> html <> css
@@ -54,10 +65,21 @@ optInput = fromMaybe StdIn <$> (optional example <|> optional expression)
   where
     example = flag' Examples (long "examples" <> help "Show some examples")
     expression =
-        Expression <$>
-        strOption
-            (short 'e' <> long "expression" <> metavar "EXPRESSION" <>
-             help "Expression (snippet) to expand")
+      Expression <$> strOption
+        (short 'e' <> long "expression" <> metavar "EXPRESSION" <>
+           help "Expression (snippet) to expand")
+
+optOutput :: Parser Output
+optOutput = fromMaybe StdOut <$> (optional cmdLine <|> optional fileName)
+  where
+    cmdLine =
+      Cmd <$> strOption
+        (short 'c' <> long "command" <> metavar "CMD" <>
+           help "Command to pipe result to")
+    fileName =
+      File <$> strOption
+        (short 'O' <> long "out-file" <> metavar "FILE" <>
+           help "Output file")
 
 cmd :: String -> Parser a -> String -> Mod CommandFields a
 cmd c p desc = command c $ info (p <**> helper) $ progDesc desc

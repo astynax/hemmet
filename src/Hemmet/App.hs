@@ -1,14 +1,15 @@
 module Hemmet.App
-    ( runCli
-    , runTui
-    ) where
+  ( runCli
+  , runTui
+  ) where
 
+import Prelude hiding (putStrLn, putStr, getLine, writeFile)
 import Control.Monad
 import Data.Text (pack)
-import qualified Data.Text.IO as T
+import Data.Text.IO (putStrLn, putStr, getLine, writeFile)
 import Options.Applicative
 import System.Exit
-import System.IO
+import System.IO (hPutStr, stderr)
 
 import Hemmet
 import Hemmet.App.Cli
@@ -16,37 +17,42 @@ import Hemmet.App.TUI
 
 runCli :: IO ()
 runCli = do
-    (Options input runner backend) <- execParser (cliWith optInput)
-    let run' = run backend runner
-    case input of
-        StdIn -> T.getLine >>= run'
-        Expression e -> run' $ pack e
-        Examples ->
-            forM_ (examples backend) $ \(desc, inp) -> do
-                T.putStrLn $ "Example \"" <> desc <> "\""
-                T.putStrLn "<<<"
-                T.putStrLn inp
-                T.putStrLn ">>>"
-                run' inp
-                T.putStrLn ""
-                T.putStrLn ""
+  (Options input runner backend) <- execParser (cliWith optInput)
+  let run' = run backend runner
+  case input of
+    StdIn        -> getLine >>= run'
+    Expression e -> run' $ pack e
+    Examples     ->
+      forM_ (examples backend) $ \(desc, inp) -> do
+        putStrLn $ "Example \"" <> desc <> "\""
+        putStrLn "<<<"
+        putStrLn inp
+        putStrLn ">>>"
+        run' inp
+        putStrLn ""
+        putStrLn ""
   where
     run backend runner input =
-        case runHemmet backend runner input of
-            Left err -> do
-                T.putStr input -- echo an unchanged line
-                hPutStr stderr $ errorBundlePretty err
-                exitWith (ExitFailure 10)
-            Right (Pure t) -> T.putStr t
-            Right (Effect e) -> e >>= T.putStr
+      case runHemmet backend runner input of
+        Left err         -> do
+          putStr input -- echo an unchanged line
+          hPutStr stderr $ errorBundlePretty err
+          exitWith $ ExitFailure 10
+        Right (Pure t)   -> putStr t
+        Right (Effect e) -> e >>= putStr
 
 runTui :: IO ()
 runTui = do
-    (Options _ runner backend) <- execParser (cliWith $ pure ())
-    tui (run backend runner)
+  (Options output runner backend) <- execParser (cliWith optOutput)
+  tui (run backend runner) >>= \case
+    Nothing     -> exitWith $ ExitFailure 1
+    Just result -> case output of
+      StdOut    -> putStr result
+      File name -> writeFile name result
+      Cmd _     -> putStrLn "TODO"
   where
     run backend runner input =
-        case runHemmet backend runner input of
-            Left err -> pure . pack $ errorBundlePretty err
-            Right (Pure t) -> pure t
-            Right (Effect e) -> e
+      case runHemmet backend runner input of
+        Left err         -> pure . pack $ errorBundlePretty err
+        Right (Pure t)   -> pure t
+        Right (Effect e) -> e

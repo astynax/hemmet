@@ -1,6 +1,6 @@
 module Golden
-    ( makeGoldenTests
-    ) where
+  ( makeGoldenTests
+  ) where
 
 import Control.Monad
 import Data.ByteString as BS
@@ -20,32 +20,43 @@ type GoldenSuite a = (Backend a, [(Runner a, String)])
 
 makeGoldenTests :: FilePath -> IO [TestTree]
 makeGoldenTests root =
-    sequence
-        [ testDirWith (root </> "bem") goldenBem
-        , testDirWith (root </> "ftree") goldenFileTree
-        ]
+  sequence
+    [ testDirWith (root </> "bem") goldenBem
+    , testDirWith (root </> "ftree") goldenFileTree
+    ]
 
 goldenBem :: GoldenSuite BemPayload
 goldenBem =
-    (bem, [(bemHtml, ".html"), (bemCss, ".css"), (bemReactFlux, ".react-flux")])
+  ( bem
+  , [ (bemHtml, ".html")
+    , (bemCss, ".css")
+    , (bemReactFlux, ".react-flux")
+    ]
+  )
 
 goldenFileTree :: GoldenSuite FileTreePayload
-goldenFileTree = (fileTree, [(treeLike, ".tree"), (bashScript, ".bash")])
+goldenFileTree =
+  ( fileTree
+  , [ (treeLike, ".tree")
+    , (bashScript, ".bash")
+    ]
+  )
 
 testDirWith :: FilePath -> GoldenSuite a -> IO TestTree
 testDirWith dir (backend, renderers) = do
-    inputFiles <- globDir1 (compile "*.hemmet") dir
-    fmap (testGroup dir) . forM inputFiles $ \path -> do
-        input <- BS.readFile path
-        let baseName = takeBaseName path
-            check (renderer, suffix) =
-                let goldenFile = replaceExtension path $ suffix <> ".golden"
-                in goldenVsStringDiff
-                       (baseName <> suffix)
-                       (\gold new -> ["diff", "-u", gold, new])
-                       goldenFile
-                       (return . BSL.fromStrict . run backend renderer $ input)
-        return . testGroup baseName $ Prelude.map check renderers
+  inputFiles <- globDir1 (compile "*.hemmet") dir
+  fmap (testGroup dir) . forM inputFiles $ \path -> do
+    input <- BS.readFile path
+    let
+      baseName                 = takeBaseName path
+      check (renderer, suffix) =
+        let goldenFile = replaceExtension path $ suffix <> ".golden"
+        in goldenVsStringDiff
+          (baseName <> suffix)
+          (\gold new -> ["diff", "-u", gold, new])
+          goldenFile
+          (return . BSL.fromStrict . run backend renderer $ input)
+    return . testGroup baseName $ Prelude.map check renderers
 
 run :: Backend a -> Runner a -> ByteString -> ByteString
 run backend runner = encodeUtf8 . run' . Prelude.head . T.lines . decodeUtf8

@@ -1,0 +1,13 @@
+.
+├── src/
+│   ├── Data/
+│   │   └── Text/
+│   │       └── Extra.hs
+│   ├── Lib/
+│   │   └── Util.hs
+│   └── Lib.hs
+└── test/
+    ├── Data/
+    │   └── Text/
+    │       └── ExtraSpec.hs
+    └── LibSpec.hs

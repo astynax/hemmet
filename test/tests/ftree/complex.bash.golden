@@ -1,6 +1,23 @@
 #!/bin/bash
+cat <<PREVIEW_END
+This file tree will be created:
+.
+├── file1
+├── file2
+├── folderA/
+│   ├── fileA1
+│   ├── fileA2
+│   ├── folderAA/
+│   └── folderAB/
+│       ├── fileAB1
+│       └── fileAB2
+└── folderB/
+    └── folderBA/
+        └── folderBAA/
+            └── fileBAA1
+PREVIEW_END
+read -p "Press any key to continue..." -n1 -s
 set -euf -o pipefail
-
 touch "file1"
 touch "file2"
 mkdir "folderA" && pushd "folderA"

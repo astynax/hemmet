@@ -1,8 +1,8 @@
 module Hemmet.Megaparsec
-    ( module M
-    , Parser
-    , SimpleParseError
-    ) where
+  ( module M
+  , Parser
+  , SimpleParseError
+  ) where
 
 import Data.Text
 import Data.Void

@@ -1,0 +1,37 @@
+#!/bin/bash
+cat <<PREVIEW_END
+This file tree will be created:
+.
+├── src/
+│   └── package/
+│       ├── __init__.py
+│       ├── bar.py
+│       └── foo/
+│           └── __init__.py
+└── test/
+    └── package/
+        ├── __init__.py
+        ├── bar.py
+        └── foo/
+            └── __init__.py
+PREVIEW_END
+read -p "Press any key to continue..." -n1 -s
+set -euf -o pipefail
+mkdir "src" && pushd "src"
+  mkdir "package" && pushd "package"
+    touch "__init__.py"
+    touch "bar.py"
+    mkdir "foo" && pushd "foo"
+      touch "__init__.py"
+    popd
+  popd
+popd
+mkdir "test" && pushd "test"
+  mkdir "package" && pushd "package"
+    touch "__init__.py"
+    touch "bar.py"
+    mkdir "foo" && pushd "foo"
+      touch "__init__.py"
+    popd
+  popd
+popd

@@ -1,0 +1,38 @@
+#!/bin/bash
+cat <<PREVIEW_END
+This file tree will be created:
+.
+├── src/
+│   ├── Data/
+│   │   └── Text/
+│   │       └── Extra.hs
+│   ├── Lib/
+│   │   └── Util.hs
+│   └── Lib.hs
+└── test/
+    ├── Data/
+    │   └── Text/
+    │       └── ExtraSpec.hs
+    └── LibSpec.hs
+PREVIEW_END
+read -p "Press any key to continue..." -n1 -s
+set -euf -o pipefail
+mkdir "src" && pushd "src"
+  mkdir "Data" && pushd "Data"
+    mkdir "Text" && pushd "Text"
+      touch "Extra.hs"
+    popd
+  popd
+  mkdir "Lib" && pushd "Lib"
+    touch "Util.hs"
+  popd
+  touch "Lib.hs"
+popd
+mkdir "test" && pushd "test"
+  mkdir "Data" && pushd "Data"
+    mkdir "Text" && pushd "Text"
+      touch "ExtraSpec.hs"
+    popd
+  popd
+  touch "LibSpec.hs"
+popd
