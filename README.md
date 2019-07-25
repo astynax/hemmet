@@ -135,8 +135,15 @@ The `ftree` backend supports these generators:
 `$ echo "docs/{todo.txt to_read.txt}" | hemmet ftree bash`
 ```bash
 #!/bin/bash
+cat <<PREVIEW_END
+This file tree will be created:
+.
+└── docs/
+    ├── to_read.txt
+    └── todo.txt
+PREVIEW_END
+read -p "Press any key to continue..." -n1 -s
 set -euf -o pipefail
-
 mkdir "docs" && pushd "docs"
   touch "to_read.txt"
   touch "todo.txt"
@@ -145,20 +152,45 @@ popd
 
 ## Generating Haskell source trees
 
-With `|hs|` prefix you can generate convinient file trees:
-`$ echo "|hs|app/main src/!lib/{types utils}" | hemmet ftree tree`
+With `|hs|` prefix you can scaffold Haskell projects:
+`$ echo "|hs|app/main src/*lib/{data-types utils} !foo-bar" | hemmet ftree tree`
 ```
 .
 ├── App/
 │   └── Main.hs
-└── src/
-    ├── Lib/
-    │   ├── Types.hs
-    │   └── Utils.hs
-    └── Lib.hs
+├── Src/
+│   ├── Lib/
+│   │   ├── DataTypes.hs
+│   │   └── Utils.hs
+│   └── Lib.hs
+└── foo-bar
 ```
 
-Note the `!` before `lib` in template string - this flag means "also create a `.hs` module for this folder".
+Note that
+- files get `.hs` extension,
+- `*` before `lib` means "also create a `.hs` module for this folder",
+- `!` before any name means "don't touch this item"
+- "kebab-case" morphs to "CamelCase"
+
+## Generating Python source trees
+
+With `|py|` prefix you can scaffold Python projects:
+`$ echo "|py|src/*package/{core str-utils} !foo-bar" | hemmet ftree tree`
+```
+.
+├── foo-bar
+└── src/
+    └── package/
+        ├── __init__.py
+        ├── core.py
+        └── str_utils.py
+```
+
+Note that
+- files get `.py` extension,
+- `*` before `package` means "also create an `__init__.py` module",
+- `!` before any name means "don't touch this item"
+- "kebab-case" morphs to "snake_case"
 
 # Integration with Emacs
 
