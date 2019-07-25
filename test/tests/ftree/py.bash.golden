@@ -2,23 +2,27 @@
 cat <<PREVIEW_END
 This file tree will be created:
 .
+├── README.md
 ├── src/
-│   └── package/
+│   └── some_package/
 │       ├── __init__.py
 │       ├── bar.py
 │       └── foo/
 │           └── __init__.py
-└── test/
-    └── package/
-        ├── __init__.py
-        ├── bar.py
-        └── foo/
-            └── __init__.py
+├── test/
+│   └── some_package/
+│       ├── __init__.py
+│       ├── bar.py
+│       └── foo/
+│           └── __init__.py
+└── test-cases/
+    └── test-case
 PREVIEW_END
 read -p "Press any key to continue..." -n1 -s
 set -euf -o pipefail
+touch "README.md"
 mkdir "src" && pushd "src"
-  mkdir "package" && pushd "package"
+  mkdir "some_package" && pushd "some_package"
     touch "__init__.py"
     touch "bar.py"
     mkdir "foo" && pushd "foo"
@@ -27,11 +31,14 @@ mkdir "src" && pushd "src"
   popd
 popd
 mkdir "test" && pushd "test"
-  mkdir "package" && pushd "package"
+  mkdir "some_package" && pushd "some_package"
     touch "__init__.py"
     touch "bar.py"
     mkdir "foo" && pushd "foo"
       touch "__init__.py"
     popd
   popd
+popd
+mkdir "test-cases" && pushd "test-cases"
+  touch "test-case"
 popd

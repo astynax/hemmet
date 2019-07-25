@@ -1,1 +1,1 @@
-|py|src/package/{foo/ bar} test/package/{foo/ bar}
+|py|src/*some-package/{*foo/ bar} test/*some-package/{*foo/ bar} README.md !test-cases/!test-case

@@ -2,22 +2,26 @@
 cat <<PREVIEW_END
 This file tree will be created:
 .
-├── src/
+├── README.md
+├── Src/
 │   ├── Data/
 │   │   └── Text/
 │   │       └── Extra.hs
 │   ├── Lib/
 │   │   └── Util.hs
 │   └── Lib.hs
-└── test/
-    ├── Data/
-    │   └── Text/
-    │       └── ExtraSpec.hs
-    └── LibSpec.hs
+├── Test/
+│   ├── Data/
+│   │   └── Text/
+│   │       └── ExtraSpec.hs
+│   └── LibSpec.hs
+└── test-cases/
+    └── test-case
 PREVIEW_END
 read -p "Press any key to continue..." -n1 -s
 set -euf -o pipefail
-mkdir "src" && pushd "src"
+touch "README.md"
+mkdir "Src" && pushd "Src"
   mkdir "Data" && pushd "Data"
     mkdir "Text" && pushd "Text"
       touch "Extra.hs"
@@ -28,11 +32,14 @@ mkdir "src" && pushd "src"
   popd
   touch "Lib.hs"
 popd
-mkdir "test" && pushd "test"
+mkdir "Test" && pushd "Test"
   mkdir "Data" && pushd "Data"
     mkdir "Text" && pushd "Text"
       touch "ExtraSpec.hs"
     popd
   popd
   touch "LibSpec.hs"
+popd
+mkdir "test-cases" && pushd "test-cases"
+  touch "test-case"
 popd

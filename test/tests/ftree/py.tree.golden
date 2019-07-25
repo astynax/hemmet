@@ -1,13 +1,16 @@
 .
+├── README.md
 ├── src/
-│   └── package/
+│   └── some_package/
 │       ├── __init__.py
 │       ├── bar.py
 │       └── foo/
 │           └── __init__.py
-└── test/
-    └── package/
-        ├── __init__.py
-        ├── bar.py
-        └── foo/
-            └── __init__.py
+├── test/
+│   └── some_package/
+│       ├── __init__.py
+│       ├── bar.py
+│       └── foo/
+│           └── __init__.py
+└── test-cases/
+    └── test-case

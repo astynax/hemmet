@@ -1,13 +1,16 @@
 .
-├── src/
+├── README.md
+├── Src/
 │   ├── Data/
 │   │   └── Text/
 │   │       └── Extra.hs
 │   ├── Lib/
 │   │   └── Util.hs
 │   └── Lib.hs
-└── test/
-    ├── Data/
-    │   └── Text/
-    │       └── ExtraSpec.hs
-    └── LibSpec.hs
+├── Test/
+│   ├── Data/
+│   │   └── Text/
+│   │       └── ExtraSpec.hs
+│   └── LibSpec.hs
+└── test-cases/
+    └── test-case

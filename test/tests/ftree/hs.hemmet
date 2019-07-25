@@ -1,1 +1,1 @@
-|hs|src/{!lib/util data/text/extra} test/{lib-spec data/text/extra-spec}
+|hs|src/{*lib/util data/text/extra} test/{lib-spec data/text/extra-spec} README.md !test-cases/!test-case

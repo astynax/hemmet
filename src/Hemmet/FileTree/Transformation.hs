@@ -1,5 +1,9 @@
-module Hemmet.FileTree.Transformation where
+module Hemmet.FileTree.Transformation
+   ( haskellify
+   , pythonify
+   ) where
 
+import Data.Char
 import Data.Text as T hiding (concatMap, map)
 
 import Hemmet.Tree
@@ -11,28 +15,38 @@ haskellify File = File
 haskellify (Directory nodes) = Directory $ concatMap process nodes
   where
     process (Node name File) = [Node (haskellifyFile name) File]
-    process (Node name d)
-      | "!" `isPrefixOf` name =
-        let n = T.tail name
-        in Node (haskellifyFile n) File : process (Node n d)
-    process (Node name (Directory ns)) =
-      [Node (haskellifyDir name) . Directory $ concatMap process ns]
-    haskellifyFile = (<> ".hs") . camelCase
-    haskellifyDir name
-      | name `elem` ["src", "test"] = name
-      | otherwise = camelCase name
-    camelCase = T.concat . map toTitle . split (== '-')
+    process (Node name@(T.uncons -> Just (flag, rest)) d@(Directory ns)) =
+      case flag of
+        '*' -> Node (haskellifyFile rest) File : process (Node rest d)
+        '!' -> [Node rest children]
+        _   -> [Node (camelCase name) children]
+      where
+        children = Directory $ concatMap process ns
+    process _ = error "Impossible!"
+    haskellifyFile = modifyFileWith [] ((<> ".hs") . camelCase)
+    camelCase = T.concat . map T.toTitle . split (== '-')
 
 pythonify :: Transformation FileTreePayload
 pythonify File = File
 pythonify (Directory nodes) = Directory $ concatMap process nodes
   where
     process (Node name File) = [Node (pythonifyFile name) File]
-    process (Node name (Directory ns)) =
-      let
-        initFile
-          | name `elem` ["src", "test"] = []
-          | otherwise = [Node "__init__.py" File]
-      in [Node (snakeCase name) . Directory $ initFile ++ concatMap process ns]
-    pythonifyFile = (<> ".py") . snakeCase
+    process (Node name@(T.uncons -> Just (flag, rest)) (Directory ns)) =
+      case flag of
+        '*' -> [Node (snakeCase rest) . Directory
+          $ Node "__init__.py" File : concatMap process ns]
+        '!' -> [Node rest children]
+        _   -> [Node (snakeCase name) children]
+      where
+        children = Directory $ concatMap process ns
+    process _ = error "Impossible!"
+    pythonifyFile = modifyFileWith ['_'] ((<> ".py") . snakeCase)
     snakeCase = T.intercalate "_" . split (== '-')
+
+modifyFileWith :: [Char] -> (Text -> Text) -> Text -> Text
+modifyFileWith cs f name@(T.uncons -> Just (first, rest))
+  | first == '!'                          = rest
+  | isAlphaNum first && T.all isGood name = f name
+  where
+    isGood c = isAlphaNum c || c == '-' || c `elem` cs
+modifyFileWith _ _ name                   = name
