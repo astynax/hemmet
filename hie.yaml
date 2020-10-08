@@ -1,0 +1,10 @@
+cradle:
+  cabal:
+    - path: "./app/hemmet"
+      component: "executable:hemmet"
+    - path: "./app/hemmeti"
+      component: "executable:hemmeti"
+    - path: "./src"
+      component: "lib:hemmet"
+    - path: "./test"
+      component: "test:lib"

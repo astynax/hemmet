@@ -1,21 +1,15 @@
-cabal-version: 1.12
-
--- This file has been generated from package.yaml by hpack version 0.31.0.
---
--- see: https://github.com/sol/hpack
---
--- hash: 1d55cc2e37ed57f4311c629d7befe2113f093b5661838b91d3141cd477bf01e2
+cabal-version: 2.4
 
 name:                hemmet
 version:             0.1.0.0
-description:         Expander for Emmet/ZenCoding-like snippets
+description:         Emmet/ZenCoding-like text snippet expander
 homepage:            https://github.com/astynax/hemmet#readme
 bug-reports:         https://github.com/astynax/hemmet/issues
-license:             BSD3
+license:             BSD-3-Clause
 license-file:        LICENSE
-author:              Aleksey Pirogov
-maintainer:          astynax84@gmail.com
-copyright:           Aleksey Pirogov aka astynax
+author:              Aleksei Pirogov
+maintainer:          astynax@users.noreply.github.com
+copyright:           Aleksei Pirogov aka astynax
 category:            Text
 build-type:          Simple
 extra-source-files:
@@ -25,89 +19,81 @@ source-repository head
   type: git
   location: https://github.com/astynax/hemmet
 
-library
-  hs-source-dirs:
-      src
-  default-extensions: GADTs LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards TupleSections ViewPatterns
-  exposed-modules:
-      Hemmet
-      Hemmet.App
-      Hemmet.App.Cli
-      Hemmet.App.TUI
-      Hemmet.Backend
-      Hemmet.BEM
-      Hemmet.BEM.Rendering
-      Hemmet.BEM.Template
-      Hemmet.BEM.Transformation
-      Hemmet.BEM.Tree
-      Hemmet.FileTree
-      Hemmet.FileTree.Rendering
-      Hemmet.FileTree.Template
-      Hemmet.FileTree.Transformation
-      Hemmet.FileTree.Tree
-      Hemmet.Megaparsec
-      Hemmet.Rendering
-      Hemmet.Runner
-      Hemmet.Tree
-  other-modules:
-      Paths_hemmet
-  build-depends:
-      base
-    , brick
-    , megaparsec
-    , mtl
-    , optparse-applicative
-    , text
-    , vty
+common basics
+  build-depends: base ^>=4.13.0.0
+  other-modules: Paths_hemmet
   default-language: Haskell2010
-  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wmissing-exported-signatures
+  default-extensions: GADTs
+                      LambdaCase
+                      MultiParamTypeClasses
+                      OverloadedStrings
+                      RecordWildCards
+                      TupleSections
+                      ViewPatterns
+  ghc-options: -Wall
+               -Wcompat
+               -Wincomplete-record-updates
+               -Wincomplete-uni-patterns
+               -Wredundant-constraints
+               -Wmissing-exported-signatures
+
+common exe
+  build-depends: hemmet
+
+library
+  import: basics
+  hs-source-dirs: src
+  exposed-modules: Hemmet
+                   Hemmet.App
+                   Hemmet.App.Cli
+                   Hemmet.App.TUI
+                   Hemmet.Backend
+                   Hemmet.BEM
+                   Hemmet.BEM.Rendering
+                   Hemmet.BEM.Template
+                   Hemmet.BEM.Transformation
+                   Hemmet.BEM.Tree
+                   Hemmet.FileTree
+                   Hemmet.FileTree.Rendering
+                   Hemmet.FileTree.Template
+                   Hemmet.FileTree.Transformation
+                   Hemmet.FileTree.Tree
+                   Hemmet.Megaparsec
+                   Hemmet.Rendering
+                   Hemmet.Runner
+                   Hemmet.Tree
+  build-depends: base ^>=4.13.0.0
+               , brick ^>=0.57
+               , megaparsec
+               , mtl
+               , optparse-applicative
+               , text
+               , vty
 
 executable hemmet
+  import: basics, exe
   main-is: Main.hs
-  hs-source-dirs:
-      app/hemmet
-  default-extensions: GADTs LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards TupleSections ViewPatterns
-  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wmissing-exported-signatures -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base
-    , hemmet
-  other-modules:
-      Paths_hemmet
-  default-language: Haskell2010
+  hs-source-dirs: app/hemmet
 
 executable hemmeti
+  import: basics, exe
   main-is: Main.hs
-  hs-source-dirs:
-      app/hemmeti
-  default-extensions: GADTs LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards TupleSections ViewPatterns
-  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wmissing-exported-signatures -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base
-    , hemmet
-  other-modules:
-      Paths_hemmet
-  default-language: Haskell2010
+  hs-source-dirs: app/hemmeti
 
 test-suite main
+  import: basics
   type: exitcode-stdio-1.0
   main-is: Spec.hs
-  hs-source-dirs:
-      test
-  default-extensions: GADTs LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards TupleSections ViewPatterns
-  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wmissing-exported-signatures -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      Glob
-    , base
-    , bytestring
-    , filepath
-    , hemmet
-    , hspec
-    , megaparsec
-    , tasty
-    , tasty-golden
-    , tasty-hspec
-    , text
-  other-modules:
-      Golden
-      Paths_hemmet
-  default-language: Haskell2010
+  hs-source-dirs: test
+  build-depends: Glob
+               , base ^>=4.13.0.0
+               , bytestring
+               , filepath
+               , hemmet
+               , hspec
+               , megaparsec
+               , tasty
+               , tasty-golden
+               , tasty-hspec
+               , text
+  other-modules: Golden
