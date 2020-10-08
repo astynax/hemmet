@@ -150,6 +150,8 @@ mkdir "docs" && pushd "docs"
 popd
 ```
 
+You can even make a [shell script](examples/mktree) that will call the TUI and then execute the result of generation automatically.
+
 ## Generating Haskell source trees
 
 With `|hs|` prefix you can scaffold Haskell projects:

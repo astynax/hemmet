@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# A thin wraper for hemmeti
+
+TEMPFILE=$(mktemp --tmpdir mktree_XXXXXX.bash)
+
+hemmeti ftree bash -O "$TEMPFILE" && bash "$TEMPFILE"
