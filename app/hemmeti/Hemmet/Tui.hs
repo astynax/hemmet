@@ -1,4 +1,4 @@
-module Hemmet.App.TUI
+module Hemmet.Tui
   ( tui
   ) where
 

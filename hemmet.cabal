@@ -44,9 +44,6 @@ library
   import: basics
   hs-source-dirs: src
   exposed-modules: Hemmet
-                   Hemmet.App
-                   Hemmet.App.Cli
-                   Hemmet.App.TUI
                    Hemmet.Backend
                    Hemmet.BEM
                    Hemmet.BEM.Rendering
@@ -63,28 +60,39 @@ library
                    Hemmet.Runner
                    Hemmet.Tree
   build-depends: base ^>=4.13.0.0
-               , brick ^>=0.57
+               , megaparsec
+               , mtl
+               , text
+
+executable hemmet
+  import: basics, exe
+  main-is: Main.hs
+  hs-source-dirs: app/hemmet
+                  app/common
+  other-modules: Hemmet.Cli
+  build-depends: optparse-applicative
+               , text
+
+executable hemmeti
+  import: basics, exe
+  main-is: Main.hs
+  hs-source-dirs: app/hemmeti
+                  app/common
+  other-modules: Hemmet.Cli
+               , Hemmet.Tui
+  build-depends: brick ^>=0.57
                , megaparsec
                , mtl
                , optparse-applicative
                , text
                , vty
 
-executable hemmet
-  import: basics, exe
-  main-is: Main.hs
-  hs-source-dirs: app/hemmet
-
-executable hemmeti
-  import: basics, exe
-  main-is: Main.hs
-  hs-source-dirs: app/hemmeti
-
 test-suite main
   import: basics
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   hs-source-dirs: test
+  other-modules: Golden
   build-depends: Glob
                , base ^>=4.13.0.0
                , bytestring
@@ -96,4 +104,3 @@ test-suite main
                , tasty-golden
                , tasty-hspec
                , text
-  other-modules: Golden

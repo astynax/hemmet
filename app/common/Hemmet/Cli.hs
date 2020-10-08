@@ -1,7 +1,7 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE KindSignatures #-}
 
-module Hemmet.App.Cli
+module Hemmet.Cli
   ( Options(..)
   , Input(..)
   , Output(..)
@@ -10,6 +10,7 @@ module Hemmet.App.Cli
   , optOutput
   ) where
 
+import Data.Kind (Type)
 import Data.Maybe
 import Options.Applicative
 
@@ -21,11 +22,10 @@ data Input
   | StdIn
 
 data Output
-  = Cmd String
-  | File FilePath
+  = File FilePath
   | StdOut
 
-data Options :: * -> * where
+data Options :: Type -> Type where
   Options :: forall a e. e -> Runner a -> Backend a -> Options e
 
 cliWith :: Parser a -> ParserInfo (Options a)
@@ -70,12 +70,8 @@ optInput = fromMaybe StdIn <$> (optional example <|> optional expression)
            help "Expression (snippet) to expand")
 
 optOutput :: Parser Output
-optOutput = fromMaybe StdOut <$> (optional cmdLine <|> optional fileName)
+optOutput = fromMaybe StdOut <$> optional fileName
   where
-    cmdLine =
-      Cmd <$> strOption
-        (short 'c' <> long "command" <> metavar "CMD" <>
-           help "Command to pipe result to")
     fileName =
       File <$> strOption
         (short 'O' <> long "out-file" <> metavar "FILE" <>
