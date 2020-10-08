@@ -39,6 +39,7 @@ common basics
 
 common exe
   build-depends: hemmet
+  ghc-options: -O3 -threaded
 
 library
   import: basics
