@@ -103,7 +103,7 @@ modName = (<>) <$> kebabCasedName <*> possibleValue
     possibleValue = try_ $ cons <$> char '_' <*> kebabCasedName
 
 many_ :: Parser a -> Parser [a]
-many_ p = ps <* eof <|> between (char '(') (char ')') ps
+many_ p = between (char '(') (char ')') ps <|> ps
   where
     ps = p `sepBy` char '+'
 
