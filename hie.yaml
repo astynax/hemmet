@@ -1,5 +1,7 @@
 cradle:
   cabal:
+    - path: "./app/common"
+      component: "executable:hemmet"
     - path: "./app/hemmet"
       component: "executable:hemmet"
     - path: "./app/hemmeti"

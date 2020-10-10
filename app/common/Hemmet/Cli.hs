@@ -37,28 +37,36 @@ cliWith extra =
       fullDesc)
 
 commands :: Parser a -> Parser (Options a)
-commands extra = subparser $ bemC <> ftreeC
+commands extra = subparser $ bemC <> domC <> ftreeC
   where
-    bemC = cmd "bem" (bem <&> argBemRunner extra) "Generates BEM markup"
+    bemC = cmd "bem" (bem <$$> argBemRunner extra) "Generates BEM markup"
+    domC = cmd "dom" (dom <$$> argDomRunner extra) "Generates DOM markup"
     ftreeC =
       cmd "ftree"
-        (fileTree <&> argFileTreeRunner extra)
+        (fileTree <$$> argFileTreeRunner extra)
         "Generates the file trees"
 
 argBemRunner :: Parser a -> Parser (BemBackend -> Options a)
 argBemRunner extra = subparser $ flux <> html <> css
   where
     inner = fmap Options extra
-    flux = cmd "react-flux" (bemReactFlux <&> inner) "Generates react-flux code"
-    html = cmd "html" (bemHtml <&> inner) "Generates HTML"
-    css = cmd "css" (bemCss <&> inner) "Generates CSS"
+    flux = cmd "react-flux" (bemReactFlux <$$> inner) "Generates react-flux code"
+    html = cmd "html" (bemHtml <$$> inner) "Generates HTML"
+    css = cmd "css" (bemCss <$$> inner) "Generates CSS"
+
+argDomRunner :: Parser a -> Parser (DomBackend -> Options a)
+argDomRunner extra = subparser $ html <> css
+  where
+    inner = fmap Options extra
+    html = cmd "html" (domHtml <$$> inner) "Generates HTML"
+    css = cmd "css" (domCss <$$> inner) "Generates CSS"
 
 argFileTreeRunner :: Parser a -> Parser (FileTreeBackend -> Options a)
 argFileTreeRunner extra = subparser $ tree <> bash
   where
     inner = fmap Options extra
-    tree = cmd "tree" (treeLike <&> inner) "Generates GNU Tree-like output"
-    bash = cmd "bash" (bashScript <&> inner) "Generates Bash-script"
+    tree = cmd "tree" (treeLike <$$> inner) "Generates GNU Tree-like output"
+    bash = cmd "bash" (bashScript <$$> inner) "Generates Bash-script"
 
 optInput :: Parser Input
 optInput = fromMaybe StdIn <$> (optional example <|> optional expression)
@@ -80,5 +88,5 @@ optOutput = fromMaybe StdOut <$> optional fileName
 cmd :: String -> Parser a -> String -> Mod CommandFields a
 cmd c p desc = command c $ info (p <**> helper) $ progDesc desc
 
-(<&>) :: Functor f => a -> f (a -> b) -> f b
-x <&> f = ($ x) <$> f
+(<$$>) :: Functor f => a -> f (a -> b) -> f b
+x <$$> f = ($ x) <$> f

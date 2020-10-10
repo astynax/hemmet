@@ -51,6 +51,10 @@ library
                    Hemmet.BEM.Template
                    Hemmet.BEM.Transformation
                    Hemmet.BEM.Tree
+                   Hemmet.Dom
+                   Hemmet.Dom.Rendering
+                   Hemmet.Dom.Template
+                   Hemmet.Dom.Tree
                    Hemmet.FileTree
                    Hemmet.FileTree.Rendering
                    Hemmet.FileTree.Template
