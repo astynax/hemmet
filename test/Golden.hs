@@ -14,6 +14,7 @@ import Test.Tasty.Golden
 
 import Hemmet
 import Hemmet.BEM.Tree
+import Hemmet.Dom.Tree
 import Hemmet.FileTree.Tree
 
 type GoldenSuite a = (Backend a, [(Runner a, String)])
@@ -22,6 +23,7 @@ makeGoldenTests :: FilePath -> IO [TestTree]
 makeGoldenTests root =
   sequence
     [ testDirWith (root </> "bem") goldenBem
+    , testDirWith (root </> "dom") goldenDom
     , testDirWith (root </> "ftree") goldenFileTree
     ]
 
@@ -31,6 +33,15 @@ goldenBem =
   , [ (bemHtml, ".html")
     , (bemCss, ".css")
     , (bemReactFlux, ".react-flux")
+    ]
+  )
+
+goldenDom :: GoldenSuite DomPayload
+goldenDom =
+  ( dom
+  , [ (domHtml, ".html")
+    , (domCss, ".css")
+    , (domElm, ".elm")
     ]
   )
 
