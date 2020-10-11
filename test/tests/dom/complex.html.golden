@@ -1,0 +1,9 @@
+<div id="container">
+  <div class="nav">
+    <ul class="menu">
+      <li class="item"></li>
+      <li class="item"></li>
+    </ul>
+  </div>
+  <div id="content" class="width-800"></div>
+</div>
