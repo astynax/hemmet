@@ -41,6 +41,7 @@ goldenDom =
   ( dom
   , [ (domHtml, ".html")
     , (domCss, ".css")
+    , (domElm, ".elm")
     ]
   )
 

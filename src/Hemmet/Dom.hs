@@ -2,8 +2,9 @@ module Hemmet.Dom
   ( DomBackend
   , DomRunner
   , dom
-  , domHtml
   , domCss
+  , domElm
+  , domHtml
   ) where
 
 import Data.Text as T
@@ -27,11 +28,14 @@ dom =
     , examples = domExamples
     }
 
-domHtml :: DomRunner
-domHtml = PureRunner renderHtmlM
-
 domCss :: DomRunner
 domCss = PureRunner renderCssM
+
+domElm :: DomRunner
+domElm = PureRunner renderElmM
+
+domHtml :: DomRunner
+domHtml = PureRunner renderHtmlM
 
 domExamples :: [(Text, Text)]
 domExamples =

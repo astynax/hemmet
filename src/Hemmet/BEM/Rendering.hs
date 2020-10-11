@@ -37,40 +37,37 @@ renderHtmlM' (Node name (BemPayload classes _ childs)) = do
   nl
   where
     tagName =
-        case name of
-            "" -> "div"
-            _ -> name
+      case name of
+        "" -> "div"
+        _  -> name
 
 renderReactFluxM' :: NodeRenderer
 renderReactFluxM' (Node name (BemPayload classes vars childs)) = do
   pad
   out $ tagName <> " "
-  let cs = '"' `cons` T.unwords classes `snoc` '"'
-  out
-    $ if L.null vars
-      then cs
-      else "(" <> T.intercalate " <> " (cs : vars) <> ")"
-  if L.null childs
-    then out " $ pure ()" >> nl
-    else do
+  out $ case vars of
+    [] -> tagClasses
+    _  -> "(" <> T.intercalate " <> " (tagClasses : vars) <> ")"
+  case childs of
+    [] -> out " $ pure ()" >> nl
+    _  -> do
       out " $ do" >> nl
       withOffset 2 $ traverse_ renderReactFluxM' childs
   where
-    tagName = case name of
-      ""                          -> "divc_"
-      _ | "_" `T.isSuffixOf` name -> name
-      _                           -> name <> "c_"
+    tagName =
+      case name of
+        ""                          -> "divc_"
+        _ | "_" `T.isSuffixOf` name -> name
+        _                           -> name <> "c_"
+    tagClasses =
+      "\"" <> T.unwords classes <> "\""
 
 renderCssM' :: NodeRenderer
 renderCssM' = render . annotate . sort . collect
   where
     render = mapM_ $ \(cls, isLast) -> do
-      pad
-      out $ cons '.' cls <> " {"
-      nl
-      pad
-      out "}"
-      nl
+      pad >> out ("." <> cls <> " {") >> nl
+      pad >> out "}" >> nl
       unless isLast nl
     annotate [] = []
     annotate xs@(_:rest) = L.zip xs $ L.map (const False) rest ++ [True]
