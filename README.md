@@ -1,29 +1,97 @@
 # hemmet
 
-**hemmet** is a CLI-tool, that expands one-line templates to markup blocks in
-Haskell/HTML/CSS. Template language is similar to [Emmet](http://emmet.io/)/[ZenCoding](http://www.456bereastreet.com/archive/200909/write_html_and_css_quicker_with_with_zen_coding/)
-but has strong [BEM](https://bem.info/) flavour :) Also hemmet can generate **file trees** (useful for project templating).
+**hemmet** is a CLI-tool, that expands text snippets to markup blocks in
+Haskell/Elm/HTML/CSS/Bash. The template language is similar to [Emmet](http://emmet.io/)/[ZenCoding](http://www.456bereastreet.com/archive/200909/write_html_and_css_quicker_with_with_zen_coding/) (has a subset of their features)
+and has an optional [BEM](https://bem.info/) flavour :) Also hemmet can generate **file trees** (useful for project scaffolding).
 
 ## Usage
 
-`$ hemmet BACKEND GENERATOR -e EXPRESSION`
+`$ hemmet INPUT OUTPUT -e EXPRESSION`
 
 or
 
-`$ echo "EXPRESSION" | hemmet BACKEND GENERATOR`
+`$ echo "EXPRESSION" | hemmet INPUT OUTPUT`
 
 See `hemmet --help` for full options list.
 
-## Backends
+The `hemmeti` — same tool buth with TUI (live preview!).
 
+## Inputs (syntaxes)
+
+- `dom` works with [DOM-templates](#dom-templates),
 - `bem` works with [BEM-templates](#bem-templates),
 - `ftree` works with [file tree templates](#file-trees).
 
+# DOM-templates
+
+Hemmet expands Emmet-like templates and produces these formats (outputs)
+
+- `html`, just HTML
+
+`echo "#root>h1.red+p.article" | hemmet dom html`
+```html
+<div id="root">
+  <h1 class="red"></h1>
+  <p class="article"></p>
+</div>
+```
+
+- `css`, styles for all classes in the template
+
+`echo "#root>h1.red+p.article" | hemmet dom css`
+```css
+.article {
+}
+
+.red {
+}
+```
+
+- `elm`, an [Elm.Html](https://package.elm-lang.org/packages/elm/html/latest/) markup
+
+`echo "#root>h1.red+p.article" | hemmet dom css`
+```elm
+div [ id "root" ]
+    [ h1 [ class "red" ] []
+    , p [ class "article" ] []
+    ]
+```
+
+## Template syntax
+
+### Nesting
+
+`p+ul>(li+li+ul>li+li)+p`
+```html
+<p></p>
+<ul>
+  <li></li>
+  <li></li>
+  <ul>
+    <li></li>
+    <li></li>
+  </ul>
+</ul>
+<p></p>
+```
+
+###  Tags
+
+Tag name prepends the id or classes if any. If no tag was defined the `div` will be used.
+
+### Id
+
+Just `#id`, one at time.
+
+### Classes
+
+Just `.class.another`, simple that.
+
 # BEM-templates
 
-Hemmet can expand BEM-templates into
+Hemmet expands BEM-templates with structure checking and produce outputs:
 
-- `react-flux` - eDSL for [react-flux](https://bitbucket.org/s9gf4ult/react-flux) Haskell library
+- `react-flux` — eDSL for [react-flux](https://bitbucket.org/s9gf4ult/react-flux) Haskell library
 
 `$ echo ":foo>.bar" | hemmet bem react-flux`
 ```haskell
@@ -53,59 +121,38 @@ divc_ "foo" $ do
 
 ## Template syntax
 
+Tags are the same.
+
 ### Nesting
 
-`:block1>(.el1>(.el2)+.el3)+:block2`
+`form:form>.submit:button>img.icon:icon+.label:label`
 
 ```html
-<div class="block1">
-  <div class="block1__el1">
-    <div class="block1__el2"></div>
+<form class="form">
+  <div class="button form__submit">
+    <img class="icon button__icon"></img>
+    <div class="label button__label"></div>
   </div>
-  <div class="block1__el3"></div>
-</div>
-<div class="block2"></div>
-```
-
-### Explicit tags
-
-`button:submit`
-
-```html
-<button class="submit"></button>
+</form>
 ```
 
 ### Modifiers
 
-`:foo>.bar~font_small~hidden_t`
-
+`form:login-form>button.submit-button:button~small~disabled`
 ```html
-<div class="foo">
-  <div class="foo__bar foo__bar_font_small foo__bar_hidden_t"></div>
-</div>
+<form class="login-form">
+  <button class="button button_small button_disabled login-form__submit-button"></button>
+</form>
 ```
 
 ### Variables
 
 `:foo$bar~baz`
-
 ```haskell
 divc_ ("foo foo_baz" <> bar) $ pure ()
 ```
 
-**Note:** at the moment it works only for `react-flux` generator!
-
-### Element+Block mixes (for example *service blocks*)
-
-`:form>.submit-button:button>.label`
-
-```html
-<div class="form">
-  <div class="button form__submit-button">
-    <div class="button__label"></div>
-  </div>
-</div>
-```
+**Note:** at the moment variables are available only for the `react-flux` output!
 
 ### Root node stripping
 
@@ -118,9 +165,9 @@ divc_ ("foo foo_baz" <> bar) $ pure ()
 
 # File trees
 
-The `ftree` backend supports these generators:
+The `ftree` templates can be transformed to:
 
-- `tree` - pseudographical file tree representation
+- `tree`, the pseudographical file tree representation.
 
 `$ echo "docs/{todo.txt to_read.txt}" | hemmet ftree tree`
 ```
@@ -130,7 +177,7 @@ The `ftree` backend supports these generators:
     └── todo.txt
 ```
 
-- `bash`
+- `bash` script, that constructs a real tree!
 
 `$ echo "docs/{todo.txt to_read.txt}" | hemmet ftree bash`
 ```bash
