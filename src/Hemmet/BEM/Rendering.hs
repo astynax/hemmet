@@ -62,16 +62,18 @@ renderReactFluxM' (Node name (BemPayload classes vars childs)) = do
       _                           -> name <> "c_"
 
 renderCssM' :: NodeRenderer
-renderCssM' = render . sort . collect
+renderCssM' = render . annotate . sort . collect
   where
-    render = mapM_ $ \c -> do
+    render = mapM_ $ \(cls, isLast) -> do
       pad
-      out $ cons '.' c <> " {"
+      out $ cons '.' cls <> " {"
       nl
       pad
       out "}"
       nl
-      nl
+      unless isLast nl
+    annotate [] = []
+    annotate xs@(_:rest) = L.zip xs $ L.map (const False) rest ++ [True]
     collect (Node _ (BemPayload classes _ childs)) =
       classes ++ L.concatMap collect childs
 
