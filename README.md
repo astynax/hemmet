@@ -250,13 +250,13 @@ Note that
   (interactive)
   (let ((f (lambda (b e)
              (shell-command-on-region
-              b e "hemmet" t t "*hemmet error*" t))))
+              b e "hemmet dom html" t t "*hemmet error*" t))))
     (if (region-active-p)
         (funcall f (region-beginning) (region-end))
       (funcall f (line-beginning-position) (line-end-position)))
     ))
 ;; bind using a function from "bind-key" package
-(bind-key "C-c C-j" 'hemmet-expand-region haskell-mode-map)
+(bind-key "C-c C-j" 'hemmet-expand-region html-mode-map)
 ;; or just use built-in function
 (define-key haskell-mode-map (kbd "C-c C-j") 'hemmet-expand-region)
 ```
