@@ -55,10 +55,11 @@ argBemRunner extra = subparser $ flux <> html <> css
     css = cmd "css" (bemCss <$$> inner) "Generates CSS"
 
 argDomRunner :: Parser a -> Parser (DomBackend -> Options a)
-argDomRunner extra = subparser $ html <> css <> elm
+argDomRunner extra = subparser $ html <> lucid <> css <> elm
   where
     inner = fmap Options extra
     html = cmd "html" (domHtml <$$> inner) "Generates HTML"
+    lucid = cmd "lucid" (domLucid <$$> inner) "Generates Lucid HTML"
     css = cmd "css" (domCss <$$> inner) "Generates CSS"
     elm = cmd "elm" (domElm <$$> inner) "Generates Elm.Html"
 

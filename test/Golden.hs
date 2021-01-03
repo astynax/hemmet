@@ -40,6 +40,7 @@ goldenDom :: GoldenSuite DomPayload
 goldenDom =
   ( dom
   , [ (domHtml, ".html")
+    , (domLucid, ".lucid")
     , (domCss, ".css")
     , (domElm, ".elm")
     ]

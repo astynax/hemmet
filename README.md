@@ -57,6 +57,15 @@ div [ id "root" ]
     ]
 ```
 
+- `lucid`, the [Lucid](https://hackage.haskell.org/package/lucid) HTML eDSL
+
+`echo "#root>h1.red+p.article" | hemmet dom css`
+```haskell
+div_ [id_ "root"] $ do
+  h1_ [class_ "red"]
+  p_ [class_ "article"]
+```
+
 ## Template syntax
 
 ### Nesting

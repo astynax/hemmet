@@ -5,6 +5,7 @@ module Hemmet.Dom
   , domCss
   , domElm
   , domHtml
+  , domLucid
   ) where
 
 import Data.Text as T
@@ -36,6 +37,9 @@ domElm = PureRunner renderElmM
 
 domHtml :: DomRunner
 domHtml = PureRunner renderHtmlM
+
+domLucid :: DomRunner
+domLucid = PureRunner renderLucidM
 
 domExamples :: [(Text, Text)]
 domExamples =

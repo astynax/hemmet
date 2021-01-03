@@ -1,0 +1,6 @@
+div_ [id_ "container"] $ do
+  div_ [class_ "nav"] $ do
+    ul_ [class_ "menu"] $ do
+      li_ [class_ "item"]
+      li_ [class_ "item"]
+  div_ [id_ "content", classes_ ["width-800", "selected"]]

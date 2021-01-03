@@ -5,5 +5,5 @@
       <li class="item"></li>
     </ul>
   </div>
-  <div id="content" class="width-800"></div>
+  <div id="content" class="width-800 selected"></div>
 </div>
