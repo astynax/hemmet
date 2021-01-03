@@ -92,7 +92,7 @@ executable hemmeti
                , text
                , vty
 
-test-suite main
+test-suite lib
   import: basics
   type: exitcode-stdio-1.0
   main-is: Spec.hs

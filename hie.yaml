@@ -1,11 +1,11 @@
 cradle:
   cabal:
     - path: "./app/common"
-      component: "executable:hemmet"
+      component: "exe:hemmet"
     - path: "./app/hemmet"
-      component: "executable:hemmet"
+      component: "exe:hemmet"
     - path: "./app/hemmeti"
-      component: "executable:hemmeti"
+      component: "exe:hemmeti"
     - path: "./src"
       component: "lib:hemmet"
     - path: "./test"
