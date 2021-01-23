@@ -4,6 +4,26 @@
 Haskell/Elm/HTML/CSS/Bash. The template language is similar to [Emmet](http://emmet.io/)/[ZenCoding](http://www.456bereastreet.com/archive/200909/write_html_and_css_quicker_with_with_zen_coding/) (has a subset of their features)
 and has an optional [BEM](https://bem.info/) flavour :) Also hemmet can generate **file trees** (useful for project scaffolding).
 
+```shell
+$ echo "#root>h1.red+p.article" | hemmet dom html
+<div id="root">
+  <h1 class="red"></h1>
+  <p class="article"></p>
+</div>
+```
+
+# TUI
+
+In addition to the CLI-tool there is a TUI-app **hemmeti** which one can use to write templates having a live preview.
+
+That's how the HTML generation looks like:
+
+[![asciicast](https://asciinema.org/a/386500.svg)](https://asciinema.org/a/386500)
+
+And this is a file tree scaffolding:
+
+[![asciicast](https://asciinema.org/a/365732.svg)](https://asciinema.org/a/365732)
+
 ## Usage
 
 `$ hemmet INPUT OUTPUT -e EXPRESSION`
@@ -14,7 +34,7 @@ or
 
 See `hemmet --help` for full options list.
 
-The `hemmeti` — same tool buth with TUI (live preview!).
+`hemmeti` uses the same options but runs interactively.
 
 ## Inputs (syntaxes)
 
