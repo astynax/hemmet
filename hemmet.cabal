@@ -20,7 +20,7 @@ source-repository head
   location: https://github.com/astynax/hemmet
 
 common basics
-  build-depends: base ^>=4.13.0.0
+  build-depends: base >=4.13.0.0 && <5.0.0.0
   other-modules: Paths_hemmet
   default-language: Haskell2010
   default-extensions: GADTs
@@ -64,8 +64,7 @@ library
                    Hemmet.Rendering
                    Hemmet.Runner
                    Hemmet.Tree
-  build-depends: base ^>=4.13.0.0
-               , megaparsec
+  build-depends: megaparsec
                , mtl
                , text
 
@@ -99,7 +98,6 @@ test-suite lib
   hs-source-dirs: test
   other-modules: Golden
   build-depends: Glob
-               , base ^>=4.13.0.0
                , bytestring
                , filepath
                , hemmet
