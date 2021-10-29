@@ -3,25 +3,27 @@ module Hemmet.Dom.Rendering
   , renderLucidM
   , renderCssM
   , renderElmM
+  , module Shakespeare
   ) where
 
 import Control.Monad
 import Data.Foldable
-import Data.List as L
+import qualified Data.List as L
 import Data.Text as T
 
 import Hemmet.Rendering
 import Hemmet.Tree
 
+import Hemmet.Dom.Rendering.Common
+import Hemmet.Dom.Rendering.Shakespeare as Shakespeare
 import Hemmet.Dom.Tree
-
-type NodeRenderer = Node DomPayload -> RendererM
 
 renderHtmlM :: Renderer DomPayload
 renderHtmlM = run renderHtmlM'
 
 renderHtmlM' :: NodeRenderer
 renderHtmlM' (Node name (DomPayload mbId classes childs)) = do
+  let tagName = if name == "" then "div" else name
   pad
   out $ "<" <> tagName
   traverse_ out
@@ -35,17 +37,12 @@ renderHtmlM' (Node name (DomPayload mbId classes childs)) = do
     pad
   out ("</" <> tagName <> ">")
   nl
-  where
-    tagName =
-      case name of
-        "" -> "div"
-        _  -> name
 
 renderCssM :: Renderer DomPayload
 renderCssM = run renderCssM'
 
 renderCssM' :: NodeRenderer
-renderCssM' = render . annotate . sort . collect
+renderCssM' = render . annotateLast . L.sort . allClasses
   where
     render = traverse_ $ \(cls, isLast) -> do
       pad
@@ -56,16 +53,13 @@ renderCssM' = render . annotate . sort . collect
       nl
       unless isLast
         nl
-    annotate [] = []
-    annotate xs@(_:rest) = L.zip xs $ L.map (const False) rest <> [True]
-    collect (Node _ (DomPayload _ classes childs)) =
-      L.nub $ classes <> L.concatMap collect childs
 
 renderElmM :: Renderer DomPayload
 renderElmM = run $ renderElmM' pad
 
 renderElmM' :: RendererM -> NodeRenderer
 renderElmM' fstPad (Node name (DomPayload mbId classes childs)) = do
+  let tagName = if name == "" then "div" else name
   fstPad >> out (tagName <> " " <> tagAttrs)
   case childs of
     []     -> do
@@ -80,10 +74,6 @@ renderElmM' fstPad (Node name (DomPayload mbId classes childs)) = do
         out "]"
         nl
   where
-    tagName =
-      case name of
-        "" -> "div"
-        _  -> name
     tagId = ["id " <> quoted x | Just x <- [mbId]]
     tagClasses = L.map (("class " <>) . quoted) classes
     tagAttrs = case tagId <> tagClasses of
@@ -95,6 +85,7 @@ renderLucidM = run renderLucidM'
 
 renderLucidM' :: NodeRenderer
 renderLucidM' (Node name (DomPayload mbId classes childs)) = do
+  let tagName = if name == "" then "div_" else name <> "_"
   pad
   out tagName
   unless (L.null attrs) $
@@ -107,10 +98,6 @@ renderLucidM' (Node name (DomPayload mbId classes childs)) = do
     out " []"
   when (L.null childs) nl
   where
-    tagName =
-      case name of
-        "" -> "div_"
-        _  -> name <> "_"
     attrs = L.concat
       [["id_ " <> quoted i] | Just i <- [mbId]] <> (
         case L.nub classes of
@@ -118,12 +105,3 @@ renderLucidM' (Node name (DomPayload mbId classes childs)) = do
           [x] -> ["class_ " <> quoted x]
           xs  -> ["classes_ " <> listish (L.map quoted xs)]
         )
-
-quoted :: Text -> Text
-quoted x = "\"" <> x <> "\""
-
-listish :: [Text] -> Text
-listish xs = "[" <> T.intercalate ", " xs <> "]"
-
-run :: NodeRenderer -> Renderer DomPayload
-run r = traverse_ r . _dpChilds

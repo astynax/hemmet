@@ -47,28 +47,27 @@ commands extra = subparser $ bemC <> domC <> ftreeC
         "Generates the file trees"
 
 argBemRunner :: Parser a -> Parser (BemBackend -> Options a)
-argBemRunner extra = subparser $ flux <> html <> css
-  where
-    inner = fmap Options extra
-    flux = cmd "react-flux" (bemReactFlux <$$> inner) "Generates react-flux code"
-    html = cmd "html" (bemHtml <$$> inner) "Generates HTML"
-    css = cmd "css" (bemCss <$$> inner) "Generates CSS"
+argBemRunner extra = subparser $ mconcat
+  [ outCmd extra "react-flux" bemReactFlux "react-flux code"
+  , outCmd extra "html" bemHtml "HTML"
+  , outCmd extra "css" bemCss "CSS"
+  ]
 
 argDomRunner :: Parser a -> Parser (DomBackend -> Options a)
-argDomRunner extra = subparser $ html <> lucid <> css <> elm
-  where
-    inner = fmap Options extra
-    html = cmd "html" (domHtml <$$> inner) "Generates HTML"
-    lucid = cmd "lucid" (domLucid <$$> inner) "Generates Lucid HTML"
-    css = cmd "css" (domCss <$$> inner) "Generates CSS"
-    elm = cmd "elm" (domElm <$$> inner) "Generates Elm.Html"
+argDomRunner extra = subparser $ mconcat
+  [ outCmd extra "html" domHtml "HTML"
+  , outCmd extra "lucid" domLucid "Lucid HTML"
+  , outCmd extra "css" domCss "CSS"
+  , outCmd extra "elm" domElm "Elm.Html"
+  , outCmd extra "hamlet" domHamlet "Shakespeare/Hamlet"
+  , outCmd extra "cassius" domCassius "Shakespeare/Cassius"
+  ]
 
 argFileTreeRunner :: Parser a -> Parser (FileTreeBackend -> Options a)
-argFileTreeRunner extra = subparser $ tree <> bash
-  where
-    inner = fmap Options extra
-    tree = cmd "tree" (treeLike <$$> inner) "Generates GNU Tree-like output"
-    bash = cmd "bash" (bashScript <$$> inner) "Generates Bash-script"
+argFileTreeRunner extra = subparser $ mconcat
+  [ outCmd extra "tree" treeLike "GNU Tree-like output"
+  , outCmd extra "bash" bashScript "Bash-script"
+  ]
 
 optInput :: Parser Input
 optInput = fromMaybe StdIn <$> (optional example <|> optional expression)
@@ -89,6 +88,8 @@ optOutput = fromMaybe StdOut <$> optional fileName
 
 cmd :: String -> Parser a -> String -> Mod CommandFields a
 cmd c p desc = command c $ info (p <**> helper) $ progDesc desc
+
+outCmd extra c d n = cmd c (d <$$> fmap Options extra) $ "Generates " <> n
 
 (<$$>) :: Functor f => a -> f (a -> b) -> f b
 x <$$> f = ($ x) <$> f

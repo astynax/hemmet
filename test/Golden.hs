@@ -43,6 +43,8 @@ goldenDom =
     , (domLucid, ".lucid")
     , (domCss, ".css")
     , (domElm, ".elm")
+    , (domHamlet, ".hamlet")
+    , (domCassius, ".cassius")
     ]
   )
 

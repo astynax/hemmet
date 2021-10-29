@@ -6,6 +6,8 @@ module Hemmet.Dom
   , domElm
   , domHtml
   , domLucid
+  , domHamlet
+  , domCassius
   ) where
 
 import Data.Text as T
@@ -40,6 +42,12 @@ domHtml = PureRunner renderHtmlM
 
 domLucid :: DomRunner
 domLucid = PureRunner renderLucidM
+
+domHamlet :: DomRunner
+domHamlet = PureRunner renderHamletM
+
+domCassius :: DomRunner
+domCassius = PureRunner renderCassiusM
 
 domExamples :: [(Text, Text)]
 domExamples =
