@@ -53,6 +53,8 @@ library
                    Hemmet.BEM.Tree
                    Hemmet.Dom
                    Hemmet.Dom.Rendering
+                   Hemmet.Dom.Rendering.Common
+                   Hemmet.Dom.Rendering.Shakespeare
                    Hemmet.Dom.Template
                    Hemmet.Dom.Tree
                    Hemmet.FileTree
