@@ -54,6 +54,7 @@ library
                    Hemmet.Dom
                    Hemmet.Dom.Rendering
                    Hemmet.Dom.Rendering.Common
+                   Hemmet.Dom.Rendering.KotlinxHtml
                    Hemmet.Dom.Rendering.Shakespeare
                    Hemmet.Dom.Template
                    Hemmet.Dom.Tree

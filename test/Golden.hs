@@ -45,6 +45,7 @@ goldenDom =
     , (domElm, ".elm")
     , (domHamlet, ".hamlet")
     , (domCassius, ".cassius")
+    , (domKotlinxHtml, ".ktxhtml")
     ]
   )
 

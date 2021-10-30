@@ -1,0 +1,19 @@
+div {
+    id = "container"
+    div {
+        classes = setOf("nav")
+        ul {
+            classes = setOf("menu")
+            li {
+                classes = setOf("item")
+            }
+            li {
+                classes = setOf("item")
+            }
+        }
+    }
+    div {
+        id = "content"
+        classes = setOf("width-800", "selected")
+    }
+}
