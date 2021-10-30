@@ -3,6 +3,7 @@ module Hemmet.Dom.Rendering
   , renderLucidM
   , renderCssM
   , renderElmM
+  , module KotlinxHtml
   , module Shakespeare
   ) where
 
@@ -15,6 +16,7 @@ import Hemmet.Rendering
 import Hemmet.Tree
 
 import Hemmet.Dom.Rendering.Common
+import Hemmet.Dom.Rendering.KotlinxHtml as KotlinxHtml
 import Hemmet.Dom.Rendering.Shakespeare as Shakespeare
 import Hemmet.Dom.Tree
 

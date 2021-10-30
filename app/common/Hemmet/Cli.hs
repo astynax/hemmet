@@ -61,6 +61,7 @@ argDomRunner extra = subparser $ mconcat
   , outCmd extra "elm" domElm "Elm.Html"
   , outCmd extra "hamlet" domHamlet "Shakespeare/Hamlet"
   , outCmd extra "cassius" domCassius "Shakespeare/Cassius"
+  , outCmd extra "ktxhtml" domKotlinxHtml "Kotlinx.Html"
   ]
 
 argFileTreeRunner :: Parser a -> Parser (FileTreeBackend -> Options a)
