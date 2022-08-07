@@ -1,11 +1,16 @@
+{-# LANGUAGE CPP #-}
+
 module Hemmet.FileTree.Transformation
    ( haskellify
    , pythonify
    ) where
 
 import Data.Char
+#if MIN_VERSION_GLASGOW_HASKELL(9,0,0,0)
 import Data.Text as T hiding (concatMap, elem, map)
-
+#else
+import Data.Text as T hiding (concatMap, map)
+#endif
 import Hemmet.Tree
 
 import Hemmet.FileTree.Tree
