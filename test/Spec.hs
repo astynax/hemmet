@@ -4,6 +4,7 @@ import Test.Tasty
 import Test.Tasty.Hspec
 import Text.Megaparsec
 
+import qualified Hemmet.Dom.Template as Dom
 import Hemmet.BEM.Template as BEM
 import Hemmet.BEM.Tree
 import Hemmet.Tree
@@ -22,8 +23,22 @@ tests = do
 makeUnitTests :: IO [TestTree]
 makeUnitTests =
   testSpecs $ do
+    domParserSpec
     bemParserSpec
     transformerSpec
+
+domParserSpec :: Spec
+domParserSpec =
+  describe "parse BEM.template" $ do
+    it "parses multiplicity" $ do
+      "a>b*2" `shouldMean` [tag "a" [tag "b" [], tag "b" []]]
+    where
+      shouldMean s bs = q s `shouldBe` Just (Dom.Template bs)
+      q = either (const Nothing) Just . parse Dom.template "foo"
+      tag name cs = Dom.Tag {
+        _tName = name, _tId = Nothing, _tClasses = [], _tChilds = cs
+      }
+
 
 bemParserSpec :: Spec
 bemParserSpec =
