@@ -5,7 +5,7 @@ module Hemmet.FileTree.Rendering
 
 import Control.Monad
 import Data.Function
-import Data.List
+import Data.List ( sortBy )
 
 import Hemmet.Rendering
 import Hemmet.Tree

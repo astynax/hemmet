@@ -6,7 +6,7 @@ module Hemmet.BEM.Rendering
 
 import Control.Monad
 import Data.Foldable
-import Data.List as L
+import Data.List as L ( zip, map, concatMap, sort )
 import Data.Text as T
 
 import Hemmet.Rendering
