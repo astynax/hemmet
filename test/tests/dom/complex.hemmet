@@ -1,1 +1,1 @@
-#container>.nav>(ul.menu>li.item+li.item)+#content.width-800.selected
+#container>.nav>(ul.menu>li.item+li.item)+#content.width-800.selected>{text with space after }+{ text with space before}

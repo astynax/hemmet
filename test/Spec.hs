@@ -30,8 +30,16 @@ makeUnitTests =
 domParserSpec :: Spec
 domParserSpec =
   describe "parse BEM.template" $ do
+    it "empty string" $ do
+      "" `shouldMean` []
     it "parses multiplicity" $ do
       "a>b*2" `shouldMean` [tag "a" [tag "b" [], tag "b" []]]
+    it "parses curly braces in tag" $ do
+      "a>b{text}" `shouldMean` [tag "a" [tag "b" [Dom.PlainText "text"]]]
+    it "parses curly braces in children" $ do
+      "a>{text}+{text2}" `shouldMean` [
+          tag "a" [Dom.PlainText "text", Dom.PlainText "text2"]
+        ]
     where
       shouldMean s bs = q s `shouldBe` Just (Dom.Template bs)
       q = either (const Nothing) Just . parse Dom.template "foo"

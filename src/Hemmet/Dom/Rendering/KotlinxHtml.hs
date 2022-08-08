@@ -13,13 +13,13 @@ import Hemmet.Dom.Tree
 renderKotlinxHtmlM :: Renderer DomPayload
 renderKotlinxHtmlM = run render
   where
-    render (Node name payload) = do
+    render (Node name (DomTag mbId classes childs)) = do
       let tagName = if name == "" then "div" else name
       pad
       out $ tagName <> " {"
-      case payload of
-        DomPayload Nothing [] []       -> pure ()
-        DomPayload mbId classes childs -> do
+      case (mbId, classes, childs) of
+        (Nothing, [], []) -> pure ()
+        _                 -> do
           nl
           withOffset 4 $ do
             case mbId of
@@ -38,4 +38,8 @@ renderKotlinxHtmlM = run render
               traverse_ render childs
           pad
       out "}"
+      nl
+    render (Node _ (DomPlainText text)) = do
+      pad
+      out $ "+\"" <> text <> "\""
       nl

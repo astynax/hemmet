@@ -24,7 +24,7 @@ renderHtmlM :: Renderer DomPayload
 renderHtmlM = run renderHtmlM'
 
 renderHtmlM' :: NodeRenderer
-renderHtmlM' (Node name (DomPayload mbId classes childs)) = do
+renderHtmlM' (Node name (DomTag mbId classes childs)) = do
   let tagName = if name == "" then "div" else name
   pad
   out $ "<" <> tagName
@@ -38,6 +38,10 @@ renderHtmlM' (Node name (DomPayload mbId classes childs)) = do
     withOffset 2 $ traverse_ renderHtmlM' childs
     pad
   out ("</" <> tagName <> ">")
+  nl
+renderHtmlM' (Node _ (DomPlainText text)) = do
+  pad
+  out text
   nl
 
 renderCssM :: Renderer DomPayload
@@ -60,7 +64,7 @@ renderElmM :: Renderer DomPayload
 renderElmM = run $ renderElmM' pad
 
 renderElmM' :: RendererM -> NodeRenderer
-renderElmM' fstPad (Node name (DomPayload mbId classes childs)) = do
+renderElmM' fstPad (Node name (DomTag mbId classes childs)) = do
   let tagName = if name == "" then "div" else name
   fstPad >> out (tagName <> " " <> tagAttrs)
   case childs of
@@ -81,12 +85,16 @@ renderElmM' fstPad (Node name (DomPayload mbId classes childs)) = do
     tagAttrs = case tagId <> tagClasses of
       [] -> "[]"
       as -> "[ " <> T.intercalate ", " as <> " ]"
+renderElmM' fstPad (Node _ (DomPlainText text)) = do
+  fstPad
+  out $ "text \"" <> text <> "\""
+  nl
 
 renderLucidM :: Renderer DomPayload
 renderLucidM = run renderLucidM'
 
 renderLucidM' :: NodeRenderer
-renderLucidM' (Node name (DomPayload mbId classes childs)) = do
+renderLucidM' (Node name (DomTag mbId classes childs)) = do
   let tagName = if name == "" then "div_" else name <> "_"
   pad
   out tagName
@@ -107,3 +115,7 @@ renderLucidM' (Node name (DomPayload mbId classes childs)) = do
           [x] -> ["class_ " <> quoted x]
           xs  -> ["classes_ " <> listish (L.map quoted xs)]
         )
+renderLucidM' (Node _ (DomPlainText text)) = do
+  pad
+  out $ "\"" <> text <> "\""
+  nl
