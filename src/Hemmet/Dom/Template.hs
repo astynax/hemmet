@@ -2,7 +2,6 @@ module Hemmet.Dom.Template where
 
 import Data.Char
 import Data.Text hiding (map)
-import Data.Maybe (catMaybes, fromMaybe)
 
 import Hemmet.Megaparsec
 import Hemmet.Tree
@@ -32,29 +31,16 @@ template = Template <$> (Prelude.concat <$> many_ tag) <* eof
 
 tag :: Parser [Tag]
 tag = do
-  -- Multiplicity can appear in between those parts, so we parse any possible
-  -- position and then validate that no more than one multiplicity was parsed
+  -- Order of attributes to parse is fixed, not arbitrary, like in Emmet.
+  -- This is design decision.
   _tName <- try_ identifier
-  multiplicity1 <- parseMultiplicity
   _tId <- try_ (Just <$> (char '#' *> kebabCasedName)) <|> pure Nothing
-  multiplicity2 <- parseMultiplicity
   _tClasses <- many $ char '.' *> kebabCasedName
-  multiplicity3 <- parseMultiplicity
+  multiplicity <- char '*' *> decimal <|> pure 1
   _tChilds <- Prelude.concat <$> try_ childs
-  let multiplicities = [multiplicity1, multiplicity2, multiplicity3]
-  if
-    Prelude.length (Prelude.filter (/= Nothing) multiplicities) > 1
-  then
-    fail "Tag can has only one multiplicity"
-  else
-    let multiplicity = fromMaybe 1 (safeHead (catMaybes multiplicities)) in
-    return $ Prelude.replicate multiplicity $ Tag {..}
+  return $ Prelude.replicate multiplicity $ Tag {..}
   where
     childs = char '>' *> many_ tag
-    parseMultiplicity =  optional (char '*' *> decimal)
-    safeHead :: [a] -> Maybe a
-    safeHead []    = Nothing
-    safeHead (a:_) = Just a
 
 identifier :: Parser Text
 identifier = cons <$> firstChar <*> (pack <$> many restChar)
