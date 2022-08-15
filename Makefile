@@ -3,6 +3,8 @@ TARGET := $(HOME)/.local/bin
 .PHONY: install
 install:
 	cabal install \
+		--avoid-reinstalls \
+		--offline \
 		--installdir=$(TARGET) \
 		--install-method=copy \
 		--overwrite-policy=always
