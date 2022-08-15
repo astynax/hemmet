@@ -9,6 +9,7 @@ import Control.Monad.Trans
 import Data.Text
 import Graphics.Vty.Attributes
 import Graphics.Vty.Input.Events
+import Lens.Micro
 
 data Focus
   = Input
@@ -21,6 +22,9 @@ data State = State
   , sFocus  :: Focus
   , sDone   :: Bool
   }
+
+editorL :: Lens' State (Editor Text Focus)
+editorL = lens sEditor (\s e -> s{sEditor = e})
 
 type Evaluator = Text -> IO Text
 
@@ -39,7 +43,7 @@ tui run = do
       { appDraw         = draw
       , appChooseCursor = chooseCursor
       , appHandleEvent  = handle run
-      , appStartEvent   = return
+      , appStartEvent   = pure ()
       , appAttrMap      = const . setBorderColor blue $ attrMap defAttr []
       }
 
@@ -57,17 +61,17 @@ draw State {..} = [input <=> output]
 
 handle
   :: Evaluator
-  -> State
   -> BrickEvent Focus Event
-  -> EventM Focus (Next State)
-handle eval s@State {..} (VtyEvent e) =
+  -> EventM Focus State ()
+handle eval be@(VtyEvent e) = do
+  s@State {sFocus} <- get
   case e of
-    (EvKey KEnter [])           -> halt s{sDone = True}
-    (EvKey KEsc [])             -> halt s
-    (EvKey (KChar 'c') [MCtrl]) -> halt s
-    (EvKey (KChar 'g') [MCtrl]) -> halt s
+    (EvKey KEnter [])           -> put s{sDone = True} >> halt
+    (EvKey KEsc [])             -> halt
+    (EvKey (KChar 'c') [MCtrl]) -> halt
+    (EvKey (KChar 'g') [MCtrl]) -> halt
     (EvKey (KChar '\t') [])     ->
-      continue s
+      put s
         { sFocus =
              case sFocus of
                Input  -> Output
@@ -76,9 +80,10 @@ handle eval s@State {..} (VtyEvent e) =
     _ ->
       case sFocus of
         Input -> do
-          ed' <- handleEditorEvent e sEditor
+          zoom editorL $ handleEditorEvent be
+          ed' <- gets sEditor
           out' <- liftIO . eval . mconcat . getEditContents $ ed'
-          continue s {sEditor = ed', sOutput = out'}
+          put s {sEditor = ed', sOutput = out'}
         Output -> do
           case e of
             (EvKey KUp [])    -> vScrollBy vps (-1)
@@ -86,10 +91,10 @@ handle eval s@State {..} (VtyEvent e) =
             (EvKey KLeft [])  -> hScrollBy vps (-1)
             (EvKey KRight []) -> hScrollBy vps 1
             _ -> pure ()
-          continue s
+          put s
   where
     vps = viewportScroll Output
-handle _ s _ = continue s
+handle _ _ = pure ()
 
 setBorderColor :: Color -> AttrMap -> AttrMap
 setBorderColor c = applyAttrMappings [(borderAttr, defAttr `withForeColor` c)]

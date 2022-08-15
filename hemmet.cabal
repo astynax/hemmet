@@ -28,6 +28,7 @@ common basics
                       MultiParamTypeClasses
                       OverloadedStrings
                       RecordWildCards
+                      NamedFieldPuns
                       TupleSections
                       ViewPatterns
   ghc-options: -Wall
@@ -87,7 +88,8 @@ executable hemmeti
                   app/common
   other-modules: Hemmet.Cli
                , Hemmet.Tui
-  build-depends: brick ^>=0.57
+  build-depends: brick ^>=1.0
+               , microlens
                , megaparsec
                , mtl
                , optparse-applicative
