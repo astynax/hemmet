@@ -115,7 +115,7 @@ toTree' :: Template -> Tree BemPayload
 toTree' (Template bs) = BemPayload [] [] $ map (transformBlock "") bs
 
 transformBlock :: Text -> Block -> Node BemPayload
-transformBlock _ (Block p) = transform' (flip const) (_pName p) p
+transformBlock _ (Block p) = transform' (const id) (_pName p) p
 
 transformElement :: Text -> Element -> Node BemPayload
 transformElement parent (Element p)                              =
