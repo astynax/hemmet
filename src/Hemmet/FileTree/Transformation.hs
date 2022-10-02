@@ -4,7 +4,7 @@ module Hemmet.FileTree.Transformation
    ) where
 
 import Data.Char
-import Data.Text as T hiding (concatMap, map)
+import Data.Text as T hiding (concatMap, elem, map)
 
 import Hemmet.Tree
 
