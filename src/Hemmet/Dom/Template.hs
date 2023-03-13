@@ -10,7 +10,7 @@ import Text.Megaparsec.Char.Lexer (decimal)
 import Hemmet.Dom.Tree
 
 newtype Template =
-  Template [Tag]
+  Template [Html]
   deriving (Show, Eq)
 
 instance ToTree Template DomPayload where
@@ -21,24 +21,27 @@ data Tag =
   { _tName    :: !Text
   , _tId      :: !(Maybe Text)
   , _tClasses :: ![Text]
-  , _tChilds  :: [Tag]
+  , _tChilds  :: [Html]
   } deriving (Show, Eq)
 
+data Html
+  = Single !Tag
+  | Times !Int !Tag
+  deriving (Show, Eq)
+
 template :: Parser Template
-template = Template <$> (Prelude.concat <$> many_ tag) <* eof
+template = Template <$> many_ tag <* eof
 
-
-
-tag :: Parser [Tag]
+tag :: Parser Html
 tag = do
   -- Order of attributes to parse is fixed, not arbitrary, like in Emmet.
   -- This is design decision.
   _tName <- try_ identifier
   _tId <- try_ (Just <$> (char '#' *> kebabCasedName)) <|> pure Nothing
   _tClasses <- many $ char '.' *> kebabCasedName
-  multiplicity <- char '*' *> decimal <|> pure 1
-  _tChilds <- Prelude.concat <$> try_ childs
-  return $ Prelude.replicate multiplicity $ Tag {..}
+  repeatOrNot <- Times <$> (char '*' *> decimal) <|> pure Single
+  _tChilds <- try_ childs
+  return . repeatOrNot $ Tag {..}
   where
     childs = char '>' *> many_ tag
 
@@ -64,7 +67,12 @@ try_ = (<|> pure mempty)
 
 -- transrormation to Tree
 toTree' :: Template -> Tree DomPayload
-toTree' (Template bs) = DomPayload Nothing [] $ map fromTag bs
+toTree' (Template bs) = DomPayload Nothing [] $ Prelude.concatMap fromHtml bs
 
-fromTag :: Tag -> Node DomPayload
-fromTag (Tag n i cls cs) = Node n $ DomPayload i cls $ map fromTag cs
+fromHtml :: Html -> [Node DomPayload]
+fromHtml (Single (Tag n i cls cs)) =
+  [Node n $ DomPayload i cls $ Prelude.concatMap fromHtml cs]
+fromHtml (Times n t) =
+  -- Yep, here we still have some replication.
+  -- Need to think how to postpone this replication until the rendering.
+  Prelude.concatMap fromHtml $ Prelude.replicate n $ Single t

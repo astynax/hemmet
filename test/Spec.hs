@@ -31,14 +31,12 @@ domParserSpec :: Spec
 domParserSpec =
   describe "parse BEM.template" $ do
     it "parses multiplicity" $ do
-      "a>b*2" `shouldMean` [tag "a" [tag "b" [], tag "b" []]]
+      "a>b*2" `shouldMean` [Dom.Single $ tag "a" [Dom.Times 2 $ tag "b" []]]
     where
       shouldMean s bs = q s `shouldBe` Just (Dom.Template bs)
       q = either (const Nothing) Just . parse Dom.template "foo"
-      tag name cs = Dom.Tag {
-        _tName = name, _tId = Nothing, _tClasses = [], _tChilds = cs
-      }
-
+      tag name cs =
+        Dom.Tag {_tName = name, _tId = Nothing, _tClasses = [], _tChilds = cs}
 
 bemParserSpec :: Spec
 bemParserSpec =
