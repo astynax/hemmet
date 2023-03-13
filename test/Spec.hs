@@ -4,6 +4,7 @@ import Test.Tasty
 import Test.Tasty.Hspec
 import Text.Megaparsec
 
+import qualified Hemmet.Dom.Template as Dom
 import Hemmet.BEM.Template as BEM
 import Hemmet.BEM.Tree
 import Hemmet.Tree
@@ -22,12 +23,26 @@ tests = do
 makeUnitTests :: IO [TestTree]
 makeUnitTests =
   testSpecs $ do
-    parserSpec
+    domParserSpec
+    bemParserSpec
     transformerSpec
 
-parserSpec :: Spec
-parserSpec =
-  describe "Lib.parse" $ do
+domParserSpec :: Spec
+domParserSpec =
+  describe "parse BEM.template" $ do
+    it "parses multiplicity" $ do
+      "a>b*2" `shouldMean` [tag "a" [tag "b" [], tag "b" []]]
+    where
+      shouldMean s bs = q s `shouldBe` Just (Dom.Template bs)
+      q = either (const Nothing) Just . parse Dom.template "foo"
+      tag name cs = Dom.Tag {
+        _tName = name, _tId = Nothing, _tClasses = [], _tChilds = cs
+      }
+
+
+bemParserSpec :: Spec
+bemParserSpec =
+  describe "parse BEM.template" $ do
     it "parses single block" $ do
       "div:foo" `shouldMean` tb "div" "foo" [] []
       ":foo" `shouldMean` tb "" "foo" [] []
@@ -75,7 +90,7 @@ parserSpec =
           [Left . ElementBlock "e" [Mod "em"] $
              Params "" "s" [Mod "sm"] []]
     it "parses a complex example" $
-      q exampleQuery `shouldBe` Just exampleTemplate
+      q bemExampleQuery `shouldBe` Just bemExampleTemplate
   where
     shouldFail s = q s `shouldBe` Nothing
     shouldMean s bs = q s `shouldBe` Just (Template bs)
@@ -92,11 +107,11 @@ transformerSpec :: Spec
 transformerSpec =
   describe "Hemmet.toTree" $
     it "transformes a complex example" $
-      toTree exampleTemplate `shouldBe` exampleNodes
+      toTree bemExampleTemplate `shouldBe` bemExampleNodes
 
 -- complex examples
-exampleQuery :: Text
-exampleQuery =
+bemExampleQuery :: Text
+bemExampleQuery =
   "form:search-form$theme>\
      \input.query>\
        \(div.help~hidden_t)\
@@ -104,8 +119,8 @@ exampleQuery =
      \span.submit-button~disabled_t:button~text_small\
        \>.hint"
 
-exampleTemplate :: Template
-exampleTemplate =
+bemExampleTemplate :: Template
+bemExampleTemplate =
   Template
     [ Block
       $ Params "form" "search-form" [Var "theme"]
@@ -119,8 +134,8 @@ exampleTemplate =
         ]
     ]
 
-exampleNodes :: Tree BemPayload
-exampleNodes =
+bemExampleNodes :: Tree BemPayload
+bemExampleNodes =
   BemPayload [] []
     [ node "form" ["search-form"] ["theme"]
       [ node "input" ["search-form__query"] []

@@ -5,6 +5,7 @@ import Data.Text hiding (map)
 
 import Hemmet.Megaparsec
 import Hemmet.Tree
+import Text.Megaparsec.Char.Lexer (decimal)
 
 import Hemmet.Dom.Tree
 
@@ -24,15 +25,20 @@ data Tag =
   } deriving (Show, Eq)
 
 template :: Parser Template
-template = Template <$> many_ tag <* eof
+template = Template <$> (Prelude.concat <$> many_ tag) <* eof
 
-tag :: Parser Tag
+
+
+tag :: Parser [Tag]
 tag = do
+  -- Order of attributes to parse is fixed, not arbitrary, like in Emmet.
+  -- This is design decision.
   _tName <- try_ identifier
   _tId <- try_ (Just <$> (char '#' *> kebabCasedName)) <|> pure Nothing
   _tClasses <- many $ char '.' *> kebabCasedName
-  _tChilds <- try_ childs
-  return Tag {..}
+  multiplicity <- char '*' *> decimal <|> pure 1
+  _tChilds <- Prelude.concat <$> try_ childs
+  return $ Prelude.replicate multiplicity $ Tag {..}
   where
     childs = char '>' *> many_ tag
 
