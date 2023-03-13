@@ -91,7 +91,7 @@ executable hemmeti
                   app/common
   other-modules: Hemmet.Cli
                , Hemmet.Tui
-  build-depends: brick
+  build-depends: brick ^>= 1.0
                , microlens
                , megaparsec
                , mtl
