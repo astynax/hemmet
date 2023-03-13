@@ -5,5 +5,8 @@
       <li class="item"></li>
     </ul>
   </div>
-  <div id="content" class="width-800 selected"></div>
+  <div id="content" class="width-800 selected">
+    text with space after 
+     text with space before
+  </div>
 </div>

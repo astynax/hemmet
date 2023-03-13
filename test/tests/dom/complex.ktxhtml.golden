@@ -15,5 +15,7 @@ div {
     div {
         id = "content"
         classes = setOf("width-800", "selected")
+        +"text with space after "
+        +" text with space before"
     }
 }

@@ -20,8 +20,9 @@ run :: NodeRenderer -> Renderer DomPayload
 run r = traverse_ r . _dpChilds
 
 allClasses :: Node DomPayload -> [Text]
-allClasses (Node _ (DomPayload _ classes childs)) =
+allClasses (Node _ (DomTag _ classes childs)) =
   L.nub $ classes <> L.concatMap allClasses childs
+allClasses (Node _ (DomPlainText _)) = []
 
 annotateLast :: [a] -> [(a, Bool)]
 annotateLast xs = L.zip xs $ L.map (const False) (L.tail xs) <> [True]
