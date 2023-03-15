@@ -10,7 +10,7 @@ module Hemmet.Dom.Rendering
 import Control.Monad
 import Data.Foldable
 import qualified Data.List as L
-import Data.Text as T
+import Data.Text as T hiding (null)
 
 import Hemmet.Rendering
 import Hemmet.Tree
@@ -24,20 +24,23 @@ renderHtmlM :: Renderer DomPayload
 renderHtmlM = run renderHtmlM'
 
 renderHtmlM' :: NodeRenderer
-renderHtmlM' (Node name (DomPayload mbId classes childs)) = do
+renderHtmlM' (Node name (DomPayload mbId classes children)) = do
   let tagName = if name == "" then "div" else name
   pad
   out $ "<" <> tagName
   traverse_ out
     [" id=" <> quoted x | Just x <- [mbId]]
-  unless (L.null classes) $
+  unless (null classes) $
     out $ " class=" <> quoted (T.unwords classes)
-  out ">"
-  unless (L.null childs) $ do
-    nl
-    withOffset 2 $ traverse_ renderHtmlM' childs
-    pad
-  out ("</" <> tagName <> ">")
+  case children of
+    Void -> out " />"
+    cs   -> do
+      out ">"
+      unless (null cs) $ do
+        nl
+        withOffset 2 $ traverse_ renderHtmlM' cs
+        pad
+      out ("</" <> tagName <> ">")
   nl
 
 renderCssM :: Renderer DomPayload
@@ -60,13 +63,11 @@ renderElmM :: Renderer DomPayload
 renderElmM = run $ renderElmM' pad
 
 renderElmM' :: RendererM -> NodeRenderer
-renderElmM' fstPad (Node name (DomPayload mbId classes childs)) = do
+renderElmM' fstPad (Node name (DomPayload mbId classes children)) = do
   let tagName = if name == "" then "div" else name
   fstPad >> out (tagName <> " " <> tagAttrs)
-  case childs of
-    []     -> do
-      out " []"
-      nl
+  case toList children of
+    []     -> out " []" >> nl
     (c:cs) -> do
       nl
       withOffset 4 $ do
@@ -86,19 +87,19 @@ renderLucidM :: Renderer DomPayload
 renderLucidM = run renderLucidM'
 
 renderLucidM' :: NodeRenderer
-renderLucidM' (Node name (DomPayload mbId classes childs)) = do
+renderLucidM' (Node name (DomPayload mbId classes children)) = do
   let tagName = if name == "" then "div_" else name <> "_"
   pad
   out tagName
-  unless (L.null attrs) $
+  unless (null attrs) $
     out $ " " <> listish attrs
-  unless (L.null childs) $ do
+  unless (null children) $ do
     out " $ do"
     nl
-    withOffset 2 $ traverse_ renderLucidM' childs
-  when (L.null attrs && L.null childs) $ do
+    withOffset 2 $ traverse_ renderLucidM' children
+  when (null attrs && null children) $ do
     out " []"
-  when (L.null childs) nl
+  when (null children) nl
   where
     attrs = L.concat
       [["id_ " <> quoted i] | Just i <- [mbId]] <> (

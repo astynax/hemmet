@@ -7,7 +7,8 @@ import Hemmet.Megaparsec
 import Hemmet.Tree
 import Text.Megaparsec.Char.Lexer (decimal)
 
-import Hemmet.Dom.Tree
+import Hemmet.Dom.Tree hiding (Void, Children)
+import qualified Hemmet.Dom.Tree as Tree
 
 newtype Template =
   Template [Html]
@@ -18,11 +19,16 @@ instance ToTree Template DomPayload where
 
 data Tag =
   Tag
-  { _tName    :: !Text
-  , _tId      :: !(Maybe Text)
-  , _tClasses :: ![Text]
-  , _tChilds  :: [Html]
+  { _tName     :: !Text
+  , _tId       :: !(Maybe Text)
+  , _tClasses  :: ![Text]
+  , _tChildren :: !Children
   } deriving (Show, Eq)
+
+data Children
+  = Void
+  | Children ![Html]
+  deriving (Show, Eq)
 
 data Html
   = Single !Tag
@@ -39,11 +45,12 @@ tag = do
   _tName <- try_ identifier
   _tId <- try_ (Just <$> (char '#' *> kebabCasedName)) <|> pure Nothing
   _tClasses <- many $ char '.' *> kebabCasedName
+  isVoid <- True <$ char '/' <|> pure False
   repeatOrNot <- Times <$> (char '*' *> decimal) <|> pure Single
-  _tChilds <- try_ childs
+  _tChildren <-
+    if isVoid then pure Void
+    else Children <$> try_ (char '>' *> many_ tag)
   return . repeatOrNot $ Tag {..}
-  where
-    childs = char '>' *> many_ tag
 
 identifier :: Parser Text
 identifier = cons <$> firstChar <*> (pack <$> many restChar)
@@ -67,11 +74,15 @@ try_ = (<|> pure mempty)
 
 -- transrormation to Tree
 toTree' :: Template -> Tree DomPayload
-toTree' (Template bs) = DomPayload Nothing [] $ Prelude.concatMap fromHtml bs
+toTree' (Template bs) =
+  DomPayload Nothing [] . Tree.Children $ Prelude.concatMap fromHtml bs
 
 fromHtml :: Html -> [Node DomPayload]
 fromHtml (Single (Tag n i cls cs)) =
-  [Node n $ DomPayload i cls $ Prelude.concatMap fromHtml cs]
+  [ Node n $ DomPayload i cls $ case cs of
+       Void       -> Tree.Void
+       Children x -> Tree.Children $ Prelude.concatMap fromHtml x
+  ]
 fromHtml (Times n t) =
   -- Yep, here we still have some replication.
   -- Need to think how to postpone this replication until the rendering.

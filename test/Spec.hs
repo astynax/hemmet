@@ -35,8 +35,12 @@ domParserSpec =
     where
       shouldMean s bs = q s `shouldBe` Just (Dom.Template bs)
       q = either (const Nothing) Just . parse Dom.template "foo"
-      tag name cs =
-        Dom.Tag {_tName = name, _tId = Nothing, _tClasses = [], _tChilds = cs}
+      tag name cs = Dom.Tag
+        { _tName = name
+        , _tId = Nothing
+        , _tClasses = []
+        , _tChildren = Dom.Children cs
+        }
 
 bemParserSpec :: Spec
 bemParserSpec =

@@ -6,7 +6,7 @@ import Data.Text as T
 import Hemmet.Rendering
 import Hemmet.Tree
 
-import Hemmet.Dom.Tree
+import Hemmet.Dom.Tree as Tree
 
 type NodeRenderer = Node DomPayload -> RendererM
 
@@ -17,11 +17,13 @@ listish :: [Text] -> Text
 listish xs = "[" <> T.intercalate ", " xs <> "]"
 
 run :: NodeRenderer -> Renderer DomPayload
-run r = traverse_ r . _dpChilds
+run r = traverse_ r . _dpChildren
 
 allClasses :: Node DomPayload -> [Text]
-allClasses (Node _ (DomPayload _ classes childs)) =
-  L.nub $ classes <> L.concatMap allClasses childs
+allClasses (Node _ (DomPayload _ classes children)) =
+  L.nub $ classes <> L.concatMap allClasses children
 
 annotateLast :: [a] -> [(a, Bool)]
-annotateLast xs = L.zip xs $ L.map (const False) (L.tail xs) <> [True]
+annotateLast [] = error "Impossible"
+annotateLast xs@(_:ts) =
+  L.zip xs $ L.map (const False) ts <> [True]

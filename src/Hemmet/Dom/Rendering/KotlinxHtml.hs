@@ -18,8 +18,8 @@ renderKotlinxHtmlM = run render
       pad
       out $ tagName <> " {"
       case payload of
-        DomPayload Nothing [] []       -> pure ()
-        DomPayload mbId classes childs -> do
+        DomPayload Nothing [] Void       -> pure ()
+        DomPayload mbId classes children -> do
           nl
           withOffset 4 $ do
             case mbId of
@@ -27,15 +27,15 @@ renderKotlinxHtmlM = run render
                 pad
                 out $"id = \"" <> x <> "\""
                 nl
-              _      -> pure ()
+              Nothing -> pure ()
             unless (L.null classes) $ do
               pad
               out $ "classes = setOf("
                 <> mconcat (L.intersperse ", " $ L.map quoted classes)
                 <> ")"
               nl
-            unless (L.null childs) $ do
-              traverse_ render childs
+            unless (L.null children) $ do
+              traverse_ render children
           pad
       out "}"
       nl

@@ -1,4 +1,4 @@
-{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE DeriveTraversable #-}
 
 module Hemmet.Dom.Tree where
 
@@ -9,11 +9,13 @@ import Hemmet.Tree
 type DomTree = Tree DomPayload
 
 data DomPayload a = DomPayload
-  { _dpId      :: !(Maybe Text)
-  , _dpClasses :: ![Text]
-  , _dpChilds  :: ![a]
+  { _dpId       :: !(Maybe Text)
+  , _dpClasses  :: ![Text]
+  , _dpChildren :: !(Children a)
   }
+  deriving (Show, Eq)
 
-deriving instance Eq a => Eq (DomPayload a)
-
-deriving instance Show a => Show (DomPayload a)
+data Children a
+  = Void
+  | Children ![a]
+  deriving (Show, Eq, Functor, Foldable, Traversable)
