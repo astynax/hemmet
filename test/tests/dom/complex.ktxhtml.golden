@@ -6,6 +6,9 @@ div {
             classes = setOf("menu")
             li {
                 classes = setOf("item")
+                img {
+                    classes = setOf("preview")
+                }
             }
             li {
                 classes = setOf("item")

@@ -2,5 +2,6 @@
   <div.nav>
     <ul.menu>
       <li.item>
+        <img.preview>
       <li.item>
   <div#content.width-800.selected>
