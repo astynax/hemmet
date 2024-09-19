@@ -23,7 +23,7 @@ jobs:
     timeout-minutes:
       60
     container:
-      image: buildpack-deps:bionic
+      image: buildpack-deps:bullseye
     continue-on-error: ${{ matrix.allow-failure }}
     strategy:
       matrix:
