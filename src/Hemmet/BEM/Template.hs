@@ -46,12 +46,12 @@ data Addon
 type Context a = ([Addon], Params -> a, Text)
 
 template :: Parser Template
-template = Template <$> many_ alwaysBlock <* eof
+template = Template <$> alwaysBlock `sepBy1` char '+' <* eof
   where
     alwaysBlock = templateNode $ (,,) [] Block <$> blockName
 
 templateNode :: Parser (Context a) -> Parser a
-templateNode cnn = do
+templateNode cnn = mayBeInParens $ do
   _pTagName <- try_ identifier
   (prevAddons, ctor, _pName) <- cnn
   _pAddons <- (++) prevAddons <$> many addon
@@ -102,10 +102,11 @@ modName = (<>) <$> kebabCasedName <*> possibleValue
   where
     possibleValue = try_ $ cons <$> char '_' <*> kebabCasedName
 
+mayBeInParens :: Parser a -> Parser a
+mayBeInParens p = between (char '(') (char ')') p <|> p
+
 many_ :: Parser a -> Parser [a]
-many_ p = between (char '(') (char ')') ps <|> ps
-  where
-    ps = p `sepBy` char '+'
+many_ p = mayBeInParens $ p `sepBy` char '+'
 
 try_ :: Monoid m => Parser m -> Parser m
 try_ = (<|> pure mempty)

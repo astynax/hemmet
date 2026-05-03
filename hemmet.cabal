@@ -1,7 +1,7 @@
 cabal-version: 2.4
 
 name:                hemmet
-version:             0.1.0.0
+version:             0.1.0.1
 synopsis:            Emmet/ZenCoding-like text snippet expander
 description:         Emmet/ZenCoding-like text snippet expander.
 homepage:            https://github.com/astynax/hemmet#readme

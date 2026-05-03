@@ -36,10 +36,10 @@ data Html
   deriving (Show, Eq)
 
 template :: Parser Template
-template = Template <$> many_ tag <* eof
+template = Template <$> tag `sepBy` char '+' <* eof
 
 tag :: Parser Html
-tag = do
+tag = mayBeInParens $ do
   -- Order of attributes to parse is fixed, not arbitrary, like in Emmet.
   -- This is design decision.
   _tName <- try_ identifier
@@ -64,10 +64,11 @@ kebabCasedName =
   where
     lascii = satisfy isAsciiLower
 
+mayBeInParens :: Parser a -> Parser a
+mayBeInParens p = between (char '(') (char ')') p <|> p
+
 many_ :: Parser a -> Parser [a]
-many_ p = between (char '(') (char ')') ps <|> ps
-  where
-    ps = p `sepBy` char '+'
+many_ p = mayBeInParens $ p `sepBy` char '+'
 
 try_ :: Monoid m => Parser m -> Parser m
 try_ = (<|> pure mempty)

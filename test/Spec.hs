@@ -79,10 +79,11 @@ bemParserSpec =
       shouldFail ":b$1leading-digit"
     it "parses a chain of items" $ do
       ":a+:b" `shouldMean` (b "a" [] ++ b "b" [])
-      "(:a+:b)" `shouldMean` (b "a" [] ++ b "b" [])
+      "(:a)+:b" `shouldMean` (b "a" [] ++ b "b" [])
       ":a>.e1+.e2" `shouldMean` b "a" [e "e1", e "e2"]
       ":a>(.e1+.e2)" `shouldMean` b "a" [e "e1", e "e2"]
       ":a>(.e1)+:b" `shouldMean` (b "a" [e "e1"] ++ b "b" [])
+      ":a>((.e1)+.e2)" `shouldMean` (b "a" [e "e1", e "e2"])
     it "parses an element+block mix" $
       ":b>.be:s>.se" `shouldMean`
       b "b" [Left . ElementBlock "be" [] $ Params "" "s" [] [e "se"]]
