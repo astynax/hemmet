@@ -1,14 +1,13 @@
 module Hemmet.Megaparsec
   ( module M
+  , Void
+  , Text
   , Parser
-  , SimpleParseError
   ) where
 
-import Data.Text
-import Data.Void
+import Data.Text (Text)
+import Data.Void (Void)
 import Text.Megaparsec as M
 import Text.Megaparsec.Char as M
 
 type Parser = Parsec Void Text
-
-type SimpleParseError = ParseErrorBundle Text Void

@@ -11,5 +11,5 @@ import Hemmet.BEM
 import Hemmet.Backend
 import Hemmet.Dom
 import Hemmet.FileTree
-import Hemmet.Megaparsec
+import Hemmet.Megaparsec hiding (parse)
 import Hemmet.Runner

@@ -15,12 +15,13 @@ import Data.Text as T
 
 import Hemmet.Backend
 import Hemmet.Runner
+import Hemmet.Zipper
 
 import Hemmet.Dom.Rendering
-import Hemmet.Dom.Template
+import Hemmet.Dom.Template as Template
 import Hemmet.Dom.Tree
 
-type DomBackend = Backend DomPayload
+type DomBackend = Backend ZippingError DomPayload
 
 type DomRunner = Runner DomPayload
 
@@ -28,7 +29,7 @@ dom :: DomBackend
 dom =
   Backend
     { getTransformation = (id,)
-    , parser = template
+    , parse = Template.parse
     , examples = domExamples
     }
 

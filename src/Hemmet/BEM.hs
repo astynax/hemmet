@@ -8,6 +8,9 @@ module Hemmet.BEM
   ) where
 
 import Data.Text as T
+import Data.Void (Void)
+
+import Text.Megaparsec (runParser)
 
 import Hemmet.Backend
 import Hemmet.Runner
@@ -17,7 +20,7 @@ import Hemmet.BEM.Template
 import Hemmet.BEM.Transformation
 import Hemmet.BEM.Tree
 
-type BemBackend = Backend BemPayload
+type BemBackend = Backend Void BemPayload
 
 type BemRunner = Runner BemPayload
 
@@ -28,7 +31,7 @@ bem =
        if "<" `T.isPrefixOf` input
        then (stripTopNode, T.tail input)
        else (id, input)
-    , parser = template
+    , parse = runParser template "template"
     , examples = bemExamples
     }
 

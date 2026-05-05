@@ -10,22 +10,23 @@ import Hemmet.BEM.Tree
 import Hemmet.Tree
 
 import Golden
+import qualified ZipperSpec
 
 main :: IO ()
 main = tests >>= defaultMain
 
 tests :: IO TestTree
 tests = do
-  us <- testGroup "Unit tests" <$> makeUnitTests
+  us <- testGroup "Unit tests" <$> testSpecs spec
+  zs <- testGroup "Zipper unit tests" <$> testSpecs ZipperSpec.spec
   gs <- testGroup "Golden tests" <$> makeGoldenTests "test/tests"
-  return $ testGroup "Tests" [us, gs]
+  return $ testGroup "Tests" [us, zs, gs]
 
-makeUnitTests :: IO [TestTree]
-makeUnitTests =
-  testSpecs $ do
-    domParserSpec
-    bemParserSpec
-    transformerSpec
+spec :: Spec
+spec = do
+  domParserSpec
+  bemParserSpec
+  transformerSpec
 
 domParserSpec :: Spec
 domParserSpec =
@@ -34,7 +35,7 @@ domParserSpec =
       "a>b*2" `shouldMean` [Dom.Single $ tag "a" [Dom.Times 2 $ tag "b" []]]
     where
       shouldMean s bs = q s `shouldBe` Just (Dom.Template bs)
-      q = either (const Nothing) Just . parse Dom.template "foo"
+      q = either (const Nothing) Just . Dom.parse
       tag name cs = Dom.Tag
         { _tName = name
         , _tId = Nothing
@@ -83,7 +84,7 @@ bemParserSpec =
       ":a>.e1+.e2" `shouldMean` b "a" [e "e1", e "e2"]
       ":a>(.e1+.e2)" `shouldMean` b "a" [e "e1", e "e2"]
       ":a>(.e1)+:b" `shouldMean` (b "a" [e "e1"] ++ b "b" [])
-      ":a>((.e1)+.e2)" `shouldMean` (b "a" [e "e1", e "e2"])
+      ":a>((.e1)+.e2)" `shouldMean` b "a" [e "e1", e "e2"]
     it "parses an element+block mix" $
       ":b>.be:s>.se" `shouldMean`
       b "b" [Left . ElementBlock "be" [] $ Params "" "s" [] [e "se"]]

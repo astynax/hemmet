@@ -7,6 +7,9 @@ module Hemmet.FileTree
   ) where
 
 import Data.Text as T
+import Data.Void (Void)
+
+import Text.Megaparsec (runParser)
 
 import Hemmet.Backend
 import Hemmet.Runner
@@ -16,15 +19,15 @@ import Hemmet.FileTree.Template
 import Hemmet.FileTree.Transformation
 import Hemmet.FileTree.Tree
 
-type FileTreeBackend = Backend FileTreePayload
+type FileTreeBackend = Backend Void FileTreePayload
 
 type FileTreeRunner = Runner FileTreePayload
 
 fileTree :: FileTreeBackend
 fileTree = Backend
   { getTransformation = get
-  , parser            = template
-  , examples          = fileTreeExamples
+  , parse = runParser template "template"
+  , examples = fileTreeExamples
   }
   where
     get input

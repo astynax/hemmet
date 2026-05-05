@@ -1,11 +1,16 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 module Hemmet.Dom.Template where
 
+import Control.Monad (void)
 import Data.Char
-import Data.Text hiding (map)
+import Data.Text as T hiding (map)
+
+import Text.Megaparsec.Char.Lexer (decimal)
 
 import Hemmet.Megaparsec
 import Hemmet.Tree
-import Text.Megaparsec.Char.Lexer (decimal)
+import Hemmet.Zipper
 
 import Hemmet.Dom.Tree hiding (Void, Children)
 import qualified Hemmet.Dom.Tree as Tree
@@ -30,18 +35,22 @@ data Children
   | Children ![Html]
   deriving (Show, Eq)
 
-data Html
-  = Single !Tag
-  | Times !Int !Tag
+type Html = Repeating Tag
+
+data Repeating a
+  = Single !a
+  | Times !Int !a
   deriving (Show, Eq)
 
-template :: Parser Template
-template = Template <$> tag `sepBy` char '+' <* eof
+instance Functor Repeating where
+  fmap f (Single t) = Single $ f t
+  fmap f (Times n t) = Times n $ f t
 
-tag :: Parser Html
-tag = mayBeInParens $ do
-  -- Order of attributes to parse is fixed, not arbitrary, like in Emmet.
-  -- This is design decision.
+parse :: Text -> Either (ParseErrorBundle Text ZippingError) Template
+parse = fmap Template . parseWith htmlParsing
+
+tag :: SParser Html Html
+tag = do
   _tName <- try_ identifier
   _tId <- try_ (Just <$> (char '#' *> kebabCasedName)) <|> pure Nothing
   _tClasses <- many $ char '.' *> kebabCasedName
@@ -49,31 +58,46 @@ tag = mayBeInParens $ do
   repeatOrNot <- Times <$> (char '*' *> decimal) <|> pure Single
   _tChildren <-
     if isVoid then pure Void
-    else Children <$> try_ (char '>' *> many_ tag)
+    else pure (Children [])
   return . repeatOrNot $ Tag {..}
 
-identifier :: Parser Text
-identifier = cons <$> firstChar <*> (pack <$> many restChar)
+identifier :: SParser a Text
+identifier = T.cons <$> firstChar <*> (pack <$> many restChar)
   where
     firstChar = satisfy isAsciiLower <|> satisfy isAsciiUpper <|> char '_'
     restChar = firstChar <|> digitChar
 
-kebabCasedName :: Parser Text
+kebabCasedName :: SParser a Text
 kebabCasedName =
-  cons <$> lascii <*> (pack <$> many (char '-' <|> lascii <|> digitChar))
+  T.cons <$> lascii <*> (pack <$> many (char '-' <|> lascii <|> digitChar))
   where
     lascii = satisfy isAsciiLower
 
-mayBeInParens :: Parser a -> Parser a
-mayBeInParens p = between (char '(') (char ')') p <|> p
-
-many_ :: Parser a -> Parser [a]
-many_ p = mayBeInParens $ p `sepBy` char '+'
-
-try_ :: Monoid m => Parser m -> Parser m
+try_ :: Monoid m => SParser a m -> SParser a m
 try_ = (<|> pure mempty)
 
+htmlParsing :: StepParsing Html
+htmlParsing = StepParsing
+  { downP         = void $ char '>'
+  , upP           = void $ char '^'
+  , nextP         = void $ char '+'
+  , leftBracketP  = void $ char '('
+  , rightBracketP = void $ char ')'
+  , chunkP        = tag
+  }
+
+instance Buildable Html where
+  root = Single Tag
+    { _tName = "root"
+    , _tClasses = []
+    , _tId = Nothing
+    , _tChildren = Children []
+    }
+  cons (Single t)  cs = Single t  { _tChildren = Children cs }
+  cons (Times n t) cs = Times n t { _tChildren = Children cs }
+
 -- transrormation to Tree
+
 toTree' :: Template -> Tree DomPayload
 toTree' (Template bs) =
   DomPayload Nothing [] . Tree.Children $ Prelude.concatMap fromHtml bs

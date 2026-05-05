@@ -26,7 +26,9 @@ data Output
   | StdOut
 
 data Options :: Type -> Type where
-  Options :: forall a e. e -> Runner a -> Backend a -> Options e
+  Options
+    :: forall a e be. ShowErrorComponent be
+       => e -> Runner a -> Backend be a -> Options e
 
 cliWith :: Parser a -> ParserInfo (Options a)
 cliWith extra =
@@ -55,12 +57,12 @@ argBemRunner extra = subparser $ mconcat
 
 argDomRunner :: Parser a -> Parser (DomBackend -> Options a)
 argDomRunner extra = subparser $ mconcat
-  [ outCmd extra "html" domHtml "HTML"
-  , outCmd extra "lucid" domLucid "Lucid HTML"
-  , outCmd extra "css" domCss "CSS"
-  , outCmd extra "elm" domElm "Elm.Html"
-  , outCmd extra "hamlet" domHamlet "Shakespeare/Hamlet"
-  , outCmd extra "cassius" domCassius "Shakespeare/Cassius"
+  [ outCmd extra "html"    domHtml        "HTML"
+  , outCmd extra "lucid"   domLucid       "Lucid HTML"
+  , outCmd extra "css"     domCss         "CSS"
+  , outCmd extra "elm"     domElm         "Elm.Html"
+  , outCmd extra "hamlet"  domHamlet      "Shakespeare/Hamlet"
+  , outCmd extra "cassius" domCassius     "Shakespeare/Cassius"
   , outCmd extra "ktxhtml" domKotlinxHtml "Kotlinx.Html"
   ]
 
@@ -90,6 +92,12 @@ optOutput = fromMaybe StdOut <$> optional fileName
 cmd :: String -> Parser a -> String -> Mod CommandFields a
 cmd c p desc = command c $ info (p <**> helper) $ progDesc desc
 
+outCmd
+  :: ShowErrorComponent e =>
+     Parser p
+     -> String
+     -> Runner a -> String
+     -> Mod CommandFields (Backend e a -> Options p)
 outCmd extra c d n = cmd c (d <$$> fmap Options extra) $ "Generates " <> n
 
 (<$$>) :: Functor f => a -> f (a -> b) -> f b

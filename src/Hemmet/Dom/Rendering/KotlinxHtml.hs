@@ -25,7 +25,7 @@ renderKotlinxHtmlM = run render
             case mbId of
               Just x -> do
                 pad
-                out $"id = \"" <> x <> "\""
+                out $ "id = \"" <> x <> "\""
                 nl
               Nothing -> pure ()
             unless (L.null classes) $ do

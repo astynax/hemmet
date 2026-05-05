@@ -19,12 +19,13 @@ data Result
   = Pure Text
   | Effect (IO Text)
 
-runHemmet :: Backend a -> Runner a -> Text -> Either SimpleParseError Result
-runHemmet (Backend getTransformation' parser' _) runner input =
+runHemmet
+  :: Backend e a -> Runner a -> Text -> Either (ParseErrorBundle Text e) Result
+runHemmet (Backend getTransformation' parse' _) runner input =
   let
     (padding, preinput) = T.span (== ' ') input
     (transform, datum)  = getTransformation' preinput
-  in case parse parser' "template" datum of
+  in case parse' datum of
     Left err  -> Left err
     Right tpl ->
       let tree = transform $ toTree tpl

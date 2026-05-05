@@ -16,8 +16,9 @@ import Hemmet
 import Hemmet.BEM.Tree
 import Hemmet.Dom.Tree
 import Hemmet.FileTree.Tree
+import Hemmet.Zipper (ZippingError)
 
-type GoldenSuite a = (Backend a, [(Runner a, String)])
+type GoldenSuite e a = (Backend e a, [(Runner a, String)])
 
 makeGoldenTests :: FilePath -> IO [TestTree]
 makeGoldenTests root =
@@ -27,7 +28,7 @@ makeGoldenTests root =
     , testDirWith (root </> "ftree") goldenFileTree
     ]
 
-goldenBem :: GoldenSuite BemPayload
+goldenBem :: GoldenSuite Void BemPayload
 goldenBem =
   ( bem
   , [ (bemHtml, ".html")
@@ -36,7 +37,7 @@ goldenBem =
     ]
   )
 
-goldenDom :: GoldenSuite DomPayload
+goldenDom :: GoldenSuite ZippingError DomPayload
 goldenDom =
   ( dom
   , [ (domHtml, ".html")
@@ -49,7 +50,7 @@ goldenDom =
     ]
   )
 
-goldenFileTree :: GoldenSuite FileTreePayload
+goldenFileTree :: GoldenSuite Void FileTreePayload
 goldenFileTree =
   ( fileTree
   , [ (treeLike, ".tree")
@@ -57,7 +58,7 @@ goldenFileTree =
     ]
   )
 
-testDirWith :: FilePath -> GoldenSuite a -> IO TestTree
+testDirWith :: Show e => FilePath -> GoldenSuite e a -> IO TestTree
 testDirWith dir (backend, renderers) = do
   inputFiles <- globDir1 (compile "*.hemmet") dir
   fmap (testGroup dir) . forM inputFiles $ \path -> do
@@ -73,7 +74,7 @@ testDirWith dir (backend, renderers) = do
           (return . BSL.fromStrict . run backend renderer $ input)
     return . testGroup baseName $ Prelude.map check renderers
 
-run :: Backend a -> Runner a -> ByteString -> ByteString
+run :: Show e => Backend e a -> Runner a -> ByteString -> ByteString
 run backend runner = encodeUtf8 . run' . Prelude.head . T.lines . decodeUtf8
   where
     run' = either (T.pack . show) fromResult . runHemmet backend runner
